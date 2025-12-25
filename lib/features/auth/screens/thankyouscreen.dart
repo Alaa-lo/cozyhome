@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cozy_home_1/features/renter/screens/homepage.dart';
+import 'package:cozy_home_1/features/owner/screens/owner_home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ThankYouScreen extends StatelessWidget {
   const ThankYouScreen({Key? key}) : super(key: key);
@@ -148,12 +150,27 @@ class ThankYouScreen extends StatelessWidget {
                   ),
                   elevation: 0,
                 ),
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RenterHomeScreen()),
-                  );
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  String? accountType = prefs.getString("accountType");
+
+                  if (accountType == "owner") {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OwnerHomeScreen(),
+                      ),
+                    );
+                  } else {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RenterHomeScreen(),
+                      ),
+                    );
+                  }
                 },
+
                 child: const Text(
                   "Finish",
                   style: TextStyle(

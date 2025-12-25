@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cozy_home_1/features/renter/models/apartment_model.dart';
 
 class RenterHomeController extends ChangeNotifier {
-  // ✅ Animation
+  // ============================
+  // 🔹 Animation
+  // ============================
   late AnimationController navController;
   late Animation<double> curveAnimation;
   int selectedIndex = 0;
 
-  // ✅ Apartments List (dummy data for now)
+  // ============================
+  // 🔹 Apartments List
+  // ============================
   final List<Apartment> apartments = [
     Apartment(
       title: "Modern Apartment",
@@ -83,10 +87,34 @@ class RenterHomeController extends ChangeNotifier {
     ),
   ];
 
-  // ✅ Filtered list
+  // ============================
+  // 🔹 Filtered list
+  // ============================
   List<Apartment> filtered = [];
 
-  // ✅ Initialize
+  // ============================
+  // ⭐ Favorites list
+  // ============================
+  List<Apartment> favorites = [];
+
+  // ⭐ Toggle favorite
+  void toggleFavorite(Apartment apt) {
+    if (favorites.contains(apt)) {
+      favorites.remove(apt);
+    } else {
+      favorites.add(apt);
+    }
+    notifyListeners();
+  }
+
+  // ⭐ Check if favorite
+  bool isFavorite(Apartment apt) {
+    return favorites.contains(apt);
+  }
+
+  // ============================
+  // 🔹 Initialize
+  // ============================
   void initAnimations(TickerProvider vsync) {
     navController = AnimationController(
       vsync: vsync,
@@ -98,24 +126,29 @@ class RenterHomeController extends ChangeNotifier {
       curve: Curves.easeOut,
     );
 
-    // ✅ أول ما يفتح الهوم، خلي الفلترة = كل الشقق
     filtered = List.from(apartments);
   }
 
-  // ✅ Dispose
+  // ============================
+  // 🔹 Dispose
+  // ============================
   void dispose() {
     super.dispose();
     navController.dispose();
   }
 
-  // ✅ Navigation animation
+  // ============================
+  // 🔹 Navigation animation
+  // ============================
   void onNavTapped(int index, VoidCallback updateUI) {
     selectedIndex = index;
     navController.forward(from: 0);
     updateUI();
   }
 
-  // ✅ Apply filters
+  // ============================
+  // 🔹 Apply filters
+  // ============================
   void applyFilters(Map<String, dynamic> filters) {
     String? governorate = filters["governorate"];
     String? city = filters["city"];
@@ -133,6 +166,6 @@ class RenterHomeController extends ChangeNotifier {
       return matchesGovernorate && matchesCity && matchesPrice;
     }).toList();
 
-    notifyListeners(); // ✅ مهم جداً لتحديث UI
+    notifyListeners();
   }
 }

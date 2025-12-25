@@ -74,7 +74,7 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ✅ صور الشقة + ظل + أنيميشن
+                // صور الشقة
                 Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
@@ -125,7 +125,6 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ✅ عنوان الشقة
                       Text(
                         widget.apartment.title,
                         style: GoogleFonts.poppins(
@@ -137,7 +136,6 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
 
                       const SizedBox(height: 10),
 
-                      // ✅ تقييم الشقة
                       Row(
                         children: [
                           const Icon(
@@ -167,7 +165,6 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
 
                       const SizedBox(height: 20),
 
-                      // ✅ معلومات الشقة
                       Card(
                         elevation: 3,
                         shape: RoundedRectangleBorder(
@@ -196,7 +193,6 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
 
                       const SizedBox(height: 25),
 
-                      // ✅ ميزات الشقة
                       Text(
                         "Features",
                         style: GoogleFonts.poppins(
@@ -218,7 +214,6 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
 
                       const SizedBox(height: 25),
 
-                      // ✅ وصف الشقة
                       Text(
                         "Description",
                         style: GoogleFonts.poppins(
@@ -235,8 +230,8 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                       ),
 
                       const SizedBox(height: 30),
-                      ////////////////////////////////////////////////////////////////////////////////////////
-                      // ✅ زرّين معًا: Book Now + Contact Owner
+
+                      // زر Book Now
                       Row(
                         children: [
                           Expanded(
@@ -251,20 +246,24 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                                 ),
                               ),
 
-                              // ✅ ربط زر Book Now بصفحة الحجز
-                              // ✅ داخل زر Book Now — استبدل onPressed بالكامل بهذا:
                               onPressed: () async {
+                                // ⭐ تمرير الشقة للكونترولر
+                                Provider.of<BookingController>(
+                                  context,
+                                  listen: false,
+                                ).setApartment(widget.apartment);
+
                                 final bookingData = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => ChangeNotifierProvider(
-                                      create: (_) => BookingController(),
-                                      child: const BookingScreen(),
-                                    ),
+                                    builder: (_) => const BookingScreen(),
                                   ),
                                 );
 
                                 if (bookingData != null) {
+                                  bookingData["apartment"] =
+                                      widget.apartment; // ⭐ التعديل الصحيح
+
                                   Provider.of<BookingListController>(
                                     context,
                                     listen: false,

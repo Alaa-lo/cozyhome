@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
 import 'package:cozy_home_1/features/renter/screens/editbookingsheet.dart';
 import 'package:cozy_home_1/features/renter/screens/rating_screen.dart';
+import 'package:cozy_home_1/features/renter/controllers/homepage_controller.dart'; // ⭐ مهم
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
@@ -108,6 +109,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
   }
 
   Widget _bookingCard({required Map<String, dynamic> booking}) {
+    final homeController = Provider.of<RenterHomeController>(
+      context,
+      listen: false,
+    ); // ⭐ مهم
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.only(bottom: 20),
@@ -245,21 +251,20 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                       },
                     ),
 
+                    // ⭐ زر القلب بعد التعديل
                     IconButton(
                       icon: Icon(
-                        booking['isFavorite'] == true
+                        homeController.isFavorite(booking['apartment'])
                             ? Icons.favorite
                             : Icons.favorite_border,
-                        color: booking['isFavorite'] == true
+                        color: homeController.isFavorite(booking['apartment'])
                             ? Colors.pinkAccent
                             : Colors.black26,
                         size: 28,
                       ),
                       onPressed: () {
-                        setState(() {
-                          booking['isFavorite'] =
-                              !(booking['isFavorite'] ?? false);
-                        });
+                        homeController.toggleFavorite(booking['apartment']);
+                        setState(() {});
                       },
                     ),
                   ],

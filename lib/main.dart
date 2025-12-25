@@ -1,8 +1,9 @@
 import 'package:cozy_home_1/features/renter/controllers/FilterController.dart';
 import 'package:cozy_home_1/features/renter/controllers/bookingcontroller.dart';
 import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
-import 'package:cozy_home_1/features/renter/controllers/favorites_controller.dart';
 import 'package:cozy_home_1/features/renter/controllers/rating_controller.dart';
+import 'package:cozy_home_1/features/renter/controllers/homepage_controller.dart';
+import 'package:cozy_home_1/features/owner/controllers/owner_home_controller.dart'; // ⭐ مهم جداً
 import 'package:cozy_home_1/features/splash/screens/splashscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,11 +17,12 @@ void main() {
         ChangeNotifierProvider(create: (_) => BookingController()),
         ChangeNotifierProvider(create: (_) => BookingListController()),
         ChangeNotifierProvider(create: (_) => RatingController()),
-        ChangeNotifierProvider(create: (_) => BookingListController()),
-        ChangeNotifierProvider(create: (_) => FavoritesController()),
+        ChangeNotifierProvider(create: (_) => RenterHomeController()),
+        ChangeNotifierProvider(
+          create: (_) => OwnerHomeController(),
+        ), // ⭐ أضفناه
       ],
       child: const MyApp(),
-      //ggggggggggggggggggggggg
     ),
   );
 }

@@ -5,6 +5,8 @@ import 'package:cozy_home_1/features/renter/screens/filterscreen.dart';
 import 'package:cozy_home_1/features/renter/screens/apartment_details_screen.dart';
 import 'package:cozy_home_1/features/renter/screens/mybookingsScreen.dart';
 import 'package:cozy_home_1/features/renter/screens/renterprofilescreen.dart';
+import 'package:provider/provider.dart';
+import 'favorites_screen.dart';
 
 class RenterHomeScreen extends StatefulWidget {
   const RenterHomeScreen({Key? key}) : super(key: key);
@@ -35,40 +37,45 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFEBEADA),
+    return ChangeNotifierProvider.value(
+      value: controller,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFEBEADA),
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF234E36),
-        elevation: 0,
-        title: const Text(
-          "Find your place",
-          style: TextStyle(
-            color: Color(0xFFEBEADA),
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none,
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF234E36),
+          elevation: 0,
+          title: const Text(
+            "Find your place",
+            style: TextStyle(
               color: Color(0xFFEBEADA),
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-              );
-            },
           ),
-          const SizedBox(width: 12),
-        ],
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.notifications_none,
+                color: Color(0xFFEBEADA),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 12),
+          ],
+        ),
+
+        body: Column(children: [Expanded(child: _currentPage)]),
+
+        bottomNavigationBar: _buildConvexNavBar(),
       ),
-
-      body: Column(children: [Expanded(child: _currentPage)]),
-
-      bottomNavigationBar: _buildConvexNavBar(),
     );
   }
 
@@ -265,6 +272,7 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
     );
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////
   Widget _buildConvexNavBar() {
     final icons = [Icons.home, Icons.event_note, Icons.favorite, Icons.person];
 
@@ -318,7 +326,7 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                         } else if (index == 1) {
                           _currentPage = const MyBookingsScreen();
                         } else if (index == 2) {
-                          _currentPage = const Center(child: Text("Favorites"));
+                          _currentPage = FavoritesScreen(); // ⭐ التعديل الوحيد
                         } else if (index == 3) {
                           _currentPage = const ProfileScreen();
                         }
