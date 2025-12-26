@@ -5,7 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/owner/screens/add_apartment_screen.dart';
 import 'package:cozy_home_1/features/owner/screens/manage_apartments_screen.dart';
 import 'package:cozy_home_1/features/owner/screens/booking_requests_screen.dart';
-import 'package:cozy_home_1/features/owner/screens/profile_screen.dart';
+import 'package:cozy_home_1/features/owner/screens/owner_profile_screen.dart';
+import 'package:cozy_home_1/features/owner/screens/owner_notifications_screen.dart';
 
 class OwnerHomeScreen extends StatefulWidget {
   const OwnerHomeScreen({Key? key}) : super(key: key);
@@ -72,10 +73,15 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                 Icons.notifications_none,
                 color: Color(0xFFEBEADA),
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const OwnerNotificationsScreen(),
+                  ),
+                );
+              },
             ),
-
-            const SizedBox(width: 12),
           ],
         ),
 
@@ -86,9 +92,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
     );
   }
 
-  // -------------------------------------------------------
-  // ⭐⭐ الصفحة الرئيسية مع الكارد الجديد ⭐⭐
-  // -------------------------------------------------------
   Widget _homeContent() {
     return Consumer<OwnerHomeController>(
       builder: (context, controller, _) {
@@ -134,7 +137,9 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // صورة الشقة
+                          // -----------------------------
+                          // إصلاح عرض الصورة هنا فقط
+                          // -----------------------------
                           ClipRRect(
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(20),
@@ -159,7 +164,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                                   ),
                           ),
 
-                          // معلومات الشقة
                           Padding(
                             padding: const EdgeInsets.all(16),
                             child: Column(
@@ -217,9 +221,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
     );
   }
 
-  // -------------------------------------------------------
-  // Bottom Navigation Bar
-  // -------------------------------------------------------
   Widget _buildConvexNavBar() {
     final icons = [
       Icons.home,
@@ -280,7 +281,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                         } else if (index == 2) {
                           _currentPage = const BookingRequestsScreen();
                         } else if (index == 3) {
-                          _currentPage = const ProfileScreen();
+                          _currentPage = const OwnerProfileScreen();
                         }
                       });
                     });
@@ -310,7 +311,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
   }
 }
 
-// نفس الـ Painter تبع المستأجر
 class _ConvexPainter extends CustomPainter {
   final int selectedIndex;
   final double curveValue;

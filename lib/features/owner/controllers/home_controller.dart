@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import '../models/apartment_model.dart';
 
 class OwnerHomeController extends ChangeNotifier {
   late AnimationController animationController;
   late Animation<double> curveAnimation;
 
   int selectedIndex = 0;
+
+  List<ApartmentModel> apartments = [];
 
   void initAnimations(TickerProvider vsync) {
     animationController = AnimationController(
@@ -20,6 +23,21 @@ class OwnerHomeController extends ChangeNotifier {
     animationController.forward();
   }
 
+  void addApartment(ApartmentModel apt) {
+    apartments.add(apt);
+    notifyListeners();
+  }
+
+  void updateApartment(int index, ApartmentModel updatedApt) {
+    apartments[index] = updatedApt;
+    notifyListeners();
+  }
+
+  void deleteApartment(int index) {
+    apartments.removeAt(index);
+    notifyListeners();
+  }
+
   void onNavTapped(int index, VoidCallback onCompleted) {
     if (index == selectedIndex) return;
 
@@ -28,8 +46,9 @@ class OwnerHomeController extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   void dispose() {
-    super.dispose();
     animationController.dispose();
+    super.dispose();
   }
 }

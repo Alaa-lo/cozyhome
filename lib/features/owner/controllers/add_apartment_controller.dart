@@ -1,38 +1,35 @@
-import 'package:cozy_home_1/features/owner/models/apartment_model.dart';
 import 'package:image_picker/image_picker.dart';
+import '../models/apartment_model.dart';
 
 class ApartmentController {
-  String title = "";
-  String governorate = "";
-  String city = "";
-  String address = "";
-  double price = 0;
-  String priceType = " per month";
+  String? _title;
+  String? _governorate;
+  String? _city;
+  String? _address;
+  String? _price;
+  String? _priceType;
 
-  List<XFile> images = [];
+  final List<XFile> _images = [];
 
-  void setTitle(String value) => title = value;
-  void setGovernorate(String value) => governorate = value;
-  void setCity(String value) => city = value;
-  void setAddress(String value) => address = value;
-  void setPrice(String value) => price = double.tryParse(value) ?? 0;
-  void setPriceType(String value) => priceType = value;
+  void setTitle(String v) => _title = v;
+  void setGovernorate(String v) => _governorate = v;
+  void setCity(String v) => _city = v;
+  void setAddress(String v) => _address = v;
+  void setPrice(String v) => _price = v;
+  void setPriceType(String v) => _priceType = v;
 
-  void addImage(XFile img) {
-    if (images.length < 4) {
-      images.add(img);
-    }
-  }
+  void addImage(XFile img) => _images.add(img);
 
   ApartmentModel buildModel() {
     return ApartmentModel(
-      title: title,
-      governorate: governorate,
-      city: city,
-      address: address,
-      price: price,
-      priceType: priceType,
-      images: images.map((e) => e.path).toList(),
+      id: DateTime.now().millisecondsSinceEpoch.toString(), // 🔥 أهم سطر
+      title: _title!,
+      governorate: _governorate!,
+      city: _city!,
+      address: _address ?? "",
+      price: double.tryParse(_price!) ?? 0,
+      priceType: _priceType ?? "Monthly",
+      images: _images.map((e) => e.path).toList(),
     );
   }
 }
