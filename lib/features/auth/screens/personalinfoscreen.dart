@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../controllers/personal_info_controller.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
-  final String userId;
-
-  const PersonalInfoScreen({Key? key, required this.userId}) : super(key: key);
+  const PersonalInfoScreen({Key? key}) : super(key: key);
 
   @override
   State<PersonalInfoScreen> createState() => _PersonalInfoScreenState();
@@ -17,7 +15,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   @override
   void initState() {
     super.initState();
-    controller = PersonalInfoController(userId: widget.userId);
+    controller = PersonalInfoController();
     controller.loadLocalData().then((_) {
       setState(() {});
     });

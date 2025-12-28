@@ -2,13 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cozy_home_1/features/auth/screens/thankyouscreen.dart';
+import 'package:cozy_home_1/features/auth/screens/otpverificationscreen.dart';
 import '../screens/image_preview_screen.dart';
 
 class PersonalInfoController {
-  final String userId;
-
-  PersonalInfoController({required this.userId});
+  PersonalInfoController();
 
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
@@ -20,16 +18,16 @@ class PersonalInfoController {
   Future<void> loadLocalData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    firstNameController.text = prefs.getString('firstName_$userId') ?? '';
-    lastNameController.text = prefs.getString('lastName_$userId') ?? '';
-    birthDateController.text = prefs.getString('birthDate_$userId') ?? '';
+    firstNameController.text = prefs.getString('firstName') ?? '';
+    lastNameController.text = prefs.getString('lastName') ?? '';
+    birthDateController.text = prefs.getString('birthDate') ?? '';
 
-    String? profilePath = prefs.getString('profileImagePath_$userId');
+    String? profilePath = prefs.getString('profileImagePath');
     if (profilePath != null) {
       profileImage = File(profilePath);
     }
 
-    String? idPath = prefs.getString('idImagePath_$userId');
+    String? idPath = prefs.getString('idImagePath');
     if (idPath != null) {
       idImage = File(idPath);
     }
@@ -38,15 +36,15 @@ class PersonalInfoController {
   Future<void> saveLocalData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString('firstName_$userId', firstNameController.text);
-    await prefs.setString('lastName_$userId', lastNameController.text);
-    await prefs.setString('birthDate_$userId', birthDateController.text);
+    await prefs.setString('firstName', firstNameController.text);
+    await prefs.setString('lastName', lastNameController.text);
+    await prefs.setString('birthDate', birthDateController.text);
 
     if (profileImage != null) {
-      await prefs.setString('profileImagePath_$userId', profileImage!.path);
+      await prefs.setString('profileImagePath', profileImage!.path);
     }
     if (idImage != null) {
-      await prefs.setString('idImagePath_$userId', idImage!.path);
+      await prefs.setString('idImagePath', idImage!.path);
     }
   }
 
@@ -107,11 +105,25 @@ class PersonalInfoController {
     if (!validateInputs(context)) return;
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool("profileCompleted_$userId", true);
 
+    // حفظ حالة إكمال الملف الشخصي
+    await prefs.setBool("profileCompleted", true);
+
+    // ⭐ جلب الإيميل من الريجستر
+    String email = prefs.getString("email") ?? "";
+
+    // ⭐ إضافة المستخدم لقائمة الطلبات
+    List<String> pending = prefs.getStringList("pendingRequests") ?? [];
+
+    if (!pending.contains(email)) {
+      pending.add(email);
+      await prefs.setStringList("pendingRequests", pending);
+    }
+
+    // ⭐ بعد إدخال المعلومات → ننتقل إلى شاشة التحقق
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const ThankYouScreen()),
+      MaterialPageRoute(builder: (_) => const OTPVerificationScreen()),
     );
   }
 

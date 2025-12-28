@@ -1,6 +1,6 @@
+import 'package:cozy_home_1/features/auth/screens/personalinfoscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cozy_home_1/features/auth/screens/otpverificationscreen.dart';
 
 class RegisterController {
   // Text Controllers
@@ -27,7 +27,7 @@ class RegisterController {
     await prefs.setString("email", emailController.text);
     await prefs.setString("password", passwordController.text);
 
-    // ⭐ أهم سطر: حفظ نوع الحساب
+    // ⭐ حفظ نوع الحساب
     await prefs.setString("accountType", accountType);
 
     await prefs.setBool("registered", true);
@@ -57,10 +57,10 @@ class RegisterController {
     // Save data
     await saveUserData();
 
-    // Navigate to OTP screen
+    // ⭐ Navigate to Personal Information Screen
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const OTPVerificationScreen()),
+      MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
     );
   }
 }

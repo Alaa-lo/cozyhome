@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cozy_home_1/features/renter/screens/homepage.dart';
-import 'package:cozy_home_1/features/auth/screens/personalinfoscreen.dart';
 import 'package:cozy_home_1/features/owner/screens/owner_home_screen.dart';
+import 'package:cozy_home_1/features/auth/screens/pendingapprovalscreen.dart';
+import 'package:cozy_home_1/features/auth/screens/personalinfoscreen.dart';
 
 class LoginController {
   final emailController = TextEditingController();
@@ -28,46 +29,46 @@ class LoginController {
     // ⭐ قراءة نوع الحساب
     String? accountType = prefs.getString("accountType");
 
-    // ⭐ تجهيز userId
-    String userId = emailController.text.replaceAll(".", "_");
-
     // ⭐ قراءة حالة إكمال الملف الشخصي
-    bool completed = prefs.getBool("profileCompleted_$userId") ?? false;
+    bool profileCompleted = prefs.getBool("profileCompleted") ?? false;
+
+    // ⭐ قراءة حالة موافقة الأدمن
+    bool adminApproved = prefs.getBool("adminApproved") ?? false;
 
     await saveLoginData();
 
+    // ⭐ إذا الملف الشخصي غير مكتمل → يرجع على Personal Info
+    if (!profileCompleted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
+      );
+      return;
+    }
+
+    // ⭐ إذا الملف مكتمل لكن الأدمن لم يوافق → Pending Approval
+    if (!adminApproved) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const PendingApprovalScreen()),
+      );
+      return;
+    }
+
+    // ⭐ إذا كل شيء تمام → يدخل حسب نوع الحساب
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text("Login Successful ✅")));
 
-    // ⭐ إذا كان المستخدم مالك شقة
     if (accountType == "owner") {
-      if (completed) {
-        // ✔ المالك أكمل ملفه → يروح على Home المالك
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const OwnerHomeScreen()),
-        );
-      } else {
-        // ✔ أول مرة → يروح على PersonalInfoScreen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => PersonalInfoScreen(userId: userId)),
-        );
-      }
-      return;
-    }
-
-    // ⭐ إذا كان المستخدم مستأجر
-    if (completed) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const RenterHomeScreen()),
+        MaterialPageRoute(builder: (_) => const OwnerHomeScreen()),
       );
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => PersonalInfoScreen(userId: userId)),
+        MaterialPageRoute(builder: (_) => const RenterHomeScreen()),
       );
     }
   }

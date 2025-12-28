@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cozy_home_1/features/auth/screens/accountcreatedscreen.dart';
+import 'package:cozy_home_1/features/auth/screens/pendingapprovalscreen.dart';
 
 class OTPController {
   // 6 خانات OTP
@@ -22,9 +22,10 @@ class OTPController {
     }
 
     if (enteredOTP == fakeOTP) {
-      Navigator.push(
+      // ⭐ بعد التحقق → ننتقل إلى شاشة انتظار موافقة الأدمن
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AccountCreatedScreen()),
+        MaterialPageRoute(builder: (context) => const PendingApprovalScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

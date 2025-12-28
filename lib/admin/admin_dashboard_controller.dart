@@ -1,33 +1,81 @@
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cozy_home_1/admin/pending_model.dart';
+
 class AdminDashboardController {
-  // جلب الحسابات المعلقة (مؤقتًا بيانات ثابتة)
-  Future<List<Map<String, dynamic>>> getPendingUsers() async {
-    await Future.delayed(const Duration(seconds: 1)); // محاكاة API
+  // ================================
+  // 1) جلب الحسابات المعلقة
+  // ================================
+  Future<List<PendingUser>> getPendingUsers() async {
+    final prefs = await SharedPreferences.getInstance();
 
-    return [
-      {
-        "id": 1,
-        "name": "Alaa Ahmad",
-        "email": "alaa@example.com",
-        "type": "Renter",
-      },
-      {
-        "id": 2,
-        "name": "Omar Khaled",
-        "email": "omar@example.com",
-        "type": "Owner",
-      },
-    ];
+    // ⭐ قراءة قائمة الإيميلات المعلقة
+    List<String> pendingEmails = prefs.getStringList("pendingRequests") ?? [];
+
+    List<PendingUser> users = [];
+
+    for (String email in pendingEmails) {
+      // ⭐ جلب بيانات المستخدم من SharedPreferences
+      String firstName = prefs.getString("firstName") ?? "Unknown";
+      String lastName = prefs.getString("lastName") ?? "Unknown";
+      String birthDate = prefs.getString("birthDate") ?? "Unknown";
+      String frontImage = prefs.getString("profileImagePath") ?? "";
+      String backImage = prefs.getString("idImagePath") ?? "";
+
+      // ⭐ إنشاء مستخدم مع البيانات الحقيقية
+      users.add(
+        PendingUser(
+          id: email.hashCode, // ID مؤقت
+          firstName: firstName,
+          lastName: lastName,
+          birthDate: birthDate,
+          frontImage: frontImage,
+          backImage: backImage,
+          email: email,
+        ),
+      );
+    }
+
+    return users;
   }
 
-  // الموافقة على مستخدم
-  Future<void> approveUser(int userId) async {
-    print("Approved user: $userId");
-    // هون لاحقًا بتحط API call
+  // ================================
+  // 2) الموافقة على مستخدم
+  // ================================
+  Future<void> approveUser(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // ⭐ إزالة المستخدم من قائمة الطلبات
+    List<String> pending = prefs.getStringList("pendingRequests") ?? [];
+    pending.remove(email);
+    await prefs.setStringList("pendingRequests", pending);
+
+    // ⭐ وضع موافقة الأدمن
+    await prefs.setBool("adminApproved", true);
+
+    print("Approved user: $email");
+
+    // ================================
+    // 🔗 هنا تربطي مع الباك اند لاحقًا:
+    // await ApiService.approveUser(email);
+    // ================================
   }
 
-  // رفض مستخدم
-  Future<void> rejectUser(int userId) async {
-    print("Rejected user: $userId");
-    // هون لاحقًا بتحط API call
+  // ================================
+  // 3) رفض مستخدم
+  // ================================
+  Future<void> rejectUser(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // ⭐ إزالة المستخدم من قائمة الطلبات
+    List<String> pending = prefs.getStringList("pendingRequests") ?? [];
+    pending.remove(email);
+    await prefs.setStringList("pendingRequests", pending);
+
+    print("Rejected user: $email");
+
+    // ================================
+    // 🔗 هنا تربطي مع الباك اند لاحقًا:
+    // await ApiService.rejectUser(email);
+    // ================================
   }
 }

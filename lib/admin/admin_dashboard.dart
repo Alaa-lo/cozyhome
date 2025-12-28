@@ -1,10 +1,31 @@
+import 'dart:io';
+import 'package:cozy_home_1/admin/pending_model.dart';
 import 'package:flutter/material.dart';
 import 'admin_dashboard_controller.dart';
 
-class AdminDashboard extends StatelessWidget {
-  AdminDashboard({super.key});
+class AdminDashboard extends StatefulWidget {
+  const AdminDashboard({super.key});
 
+  @override
+  State<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends State<AdminDashboard> {
   final AdminDashboardController controller = AdminDashboardController();
+
+  late Future<List<PendingUser>> futureUsers;
+
+  @override
+  void initState() {
+    super.initState();
+    futureUsers = controller.getPendingUsers();
+  }
+
+  void refresh() {
+    setState(() {
+      futureUsers = controller.getPendingUsers();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +58,7 @@ class AdminDashboard extends StatelessWidget {
 
             Expanded(
               child: FutureBuilder(
-                future: controller.getPendingUsers(),
+                future: futureUsers,
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
@@ -45,16 +66,30 @@ class AdminDashboard extends StatelessWidget {
 
                   final users = snapshot.data!;
 
+                  if (users.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "No pending accounts",
+                        style: TextStyle(fontSize: 18, color: Colors.black54),
+                      ),
+                    );
+                  }
+
                   return ListView.builder(
                     itemCount: users.length,
                     itemBuilder: (context, index) {
                       final user = users[index];
+
                       return _userCard(
-                        name: user["name"],
-                        email: user["email"],
-                        type: user["type"],
-                        onApprove: () => controller.approveUser(user["id"]),
-                        onReject: () => controller.rejectUser(user["id"]),
+                        user: user,
+                        onApprove: () async {
+                          await controller.approveUser(user.email);
+                          refresh();
+                        },
+                        onReject: () async {
+                          await controller.rejectUser(user.email);
+                          refresh();
+                        },
                       );
                     },
                   );
@@ -68,9 +103,7 @@ class AdminDashboard extends StatelessWidget {
   }
 
   Widget _userCard({
-    required String name,
-    required String email,
-    required String type,
+    required PendingUser user,
     required VoidCallback onApprove,
     required VoidCallback onReject,
   }) {
@@ -97,7 +130,7 @@ class AdminDashboard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                name,
+                "${user.firstName} ${user.lastName}",
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -105,11 +138,20 @@ class AdminDashboard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              Text(email, style: const TextStyle(color: Colors.black54)),
-              const SizedBox(height: 6),
+
               Text(
-                "Type: $type",
-                style: const TextStyle(color: Colors.black87),
+                "Birth Date: ${user.birthDate}",
+                style: const TextStyle(color: Colors.black54),
+              ),
+
+              const SizedBox(height: 6),
+
+              Row(
+                children: [
+                  _imageBox(user.frontImage),
+                  const SizedBox(width: 10),
+                  _imageBox(user.backImage),
+                ],
               ),
             ],
           ),
@@ -145,5 +187,18 @@ class AdminDashboard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _imageBox(String path) {
+    if (path.isEmpty) {
+      return Container(
+        width: 60,
+        height: 60,
+        color: Colors.grey.shade300,
+        child: const Icon(Icons.image_not_supported),
+      );
+    }
+
+    return Image.file(File(path), width: 60, height: 60, fit: BoxFit.cover);
   }
 }
