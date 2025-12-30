@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../controllers/login_controller.dart';
 import 'package:cozy_home_1/features/auth/screens/registerscreen.dart';
+import 'package:cozy_home_1/features/auth/controllers/theme_provider.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
@@ -8,8 +10,55 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFEBEADA),
+
+      // ⭐ AppBar شفاف مع أيقونة السيتينغ
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: Color(0xFF375534)),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (context) {
+                  return Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Dark Mode",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        Switch(
+                          value: themeProvider.isDarkMode,
+                          activeColor: const Color(0xFF375534),
+                          onChanged: (value) {
+                            themeProvider.toggleTheme(value);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -93,21 +142,20 @@ class LoginScreen extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {
-                    // TODO: Add forgot password logic
-                  },
+                  onPressed: () {},
                   child: const Text(
                     "Forgot password?",
                     style: TextStyle(
-                      color: Colors.black, // اللون الأسود
+                      color: Colors.black,
                       fontSize: 14,
-                      decoration: TextDecoration.underline, // خط تحت النص
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 24), // نزلت الأزرار لتحت
+              const SizedBox(height: 24),
+
               // Buttons Row
               Row(
                 children: [

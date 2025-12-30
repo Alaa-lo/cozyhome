@@ -1,6 +1,5 @@
-import 'package:cozy_home_1/features/auth/screens/personalinfoscreen.dart';
+import 'package:cozy_home_1/features/auth/service/auth_service.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterController {
   // Text Controllers
@@ -19,21 +18,7 @@ class RegisterController {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  // Save user data locally
-  Future<void> saveUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString("fullName", nameController.text);
-    await prefs.setString("email", emailController.text);
-    await prefs.setString("password", passwordController.text);
-
-    // ⭐ حفظ نوع الحساب
-    await prefs.setString("accountType", accountType);
-
-    await prefs.setBool("registered", true);
-  }
-
-  // Sign Up logic
+  // Sign Up logic (API Version)
   Future<void> signUp(BuildContext context) async {
     // Validation
     if (nameController.text.isEmpty ||
@@ -54,13 +39,26 @@ class RegisterController {
       return;
     }
 
-    // Save data
-    await saveUserData();
+    try {
+      // Call API
+      final response = await AuthService.register(
+        name: nameController.text,
+        email: emailController.text,
+        password: passwordController.text,
+        accountType: accountType,
+      );
 
-    // ⭐ Navigate to Personal Information Screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
-    );
+      print("REGISTER RESPONSE: $response");
+
+      // Laravel returns: { message: "...", user: {...} }
+      if (response["user"] != null) {
+        // Navigate to next screen
+        Navigator.pushNamed(context, "/personalInfo");
+      } else {
+        showError(context, response["message"] ?? "Registration failed");
+      }
+    } catch (e) {
+      showError(context, "Something went wrong. Please try again.");
+    }
   }
 }
