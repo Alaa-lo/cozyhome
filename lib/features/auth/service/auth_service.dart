@@ -1,50 +1,56 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import '../../../core/network/api_client.dart';
+import '../../../core/constants/api_endpoints.dart';
+import '../models/user.dart';
 
 class AuthService {
-  static const String baseUrl = "http://10.151.67.3:8000/api";
+  final ApiClient _apiClient = ApiClient();
 
   // ---------------------------
   // REGISTER
   // ---------------------------
-  static Future<Map<String, dynamic>> register({
-    required String name,
-    required String email,
+  Future<Response> register({
+    required String fullname,
+    required String phonenumber,
     required String password,
-    required String accountType,
+    required String passwordConfirmation,
+    required String role,
+    required String birthDate,
+    required File profileImage,
+    required File idImage,
   }) async {
-    final url = Uri.parse("$baseUrl/register");
+    String profileImageName = profileImage.path.split('/').last;
+    String idImageName = idImage.path.split('/').last;
 
-    final response = await http.post(
-      url,
-      headers: {"Accept": "application/json"},
-      body: {
-        "name": name,
-        "email": email,
-        "password": password,
-        "account_type": accountType,
-      },
-    );
-    return jsonDecode(response.body);
+    FormData formData = FormData.fromMap({
+      "fullname": fullname,
+      "phonenumber": phonenumber,
+      "password": password,
+      "password_confirmation": passwordConfirmation,
+      "role": role,
+      "birth_date": birthDate,
+      "profile_image": await MultipartFile.fromFile(profileImage.path, filename: profileImageName),
+      "id_image": await MultipartFile.fromFile(idImage.path, filename: idImageName),
+    });
+
+    return await _apiClient.post(ApiEndpoints.register, data: formData);
   }
 
   // ---------------------------
   // LOGIN
   // ---------------------------
-  static Future<Map<String, dynamic>> login({
-    required String email,
+  Future<Map<String, dynamic>> login({
+    required String phonenumber,
     required String password,
   }) async {
-    final url = Uri.parse("$baseUrl/login");
-
-    final response = await http.post(
-      url,
-      headers: {"Accept": "application/json"},
-      body: {"email": email, "password": password},
+    final response = await _apiClient.post(
+      ApiEndpoints.login,
+      data: {"phonenumber": phonenumber, "password": password},
     );
 
-    final data = jsonDecode(response.body);
+    final data = response.data;
 
     // Save token if exists
     if (data["token"] != null) {
@@ -58,41 +64,32 @@ class AuthService {
   // ---------------------------
   // LOGOUT
   // ---------------------------
-  static Future<bool> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
-
-    if (token == null) return false;
-
-    final url = Uri.parse("$baseUrl/logout");
-
-    final response = await http.post(
-      url,
-      headers: {"Accept": "application/json", "Authorization": "Bearer $token"},
-    );
-
-    if (response.statusCode == 200) {
-      await prefs.remove("token");
-      return true;
+  Future<bool> logout() async {
+    try {
+      final response = await _apiClient.post(ApiEndpoints.logout);
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove("token");
+        return true;
+      }
+    } catch (e) {
+      // Handle error
     }
-
     return false;
   }
 
   // ---------------------------
   // GET PROFILE
   // ---------------------------
-  static Future<Map<String, dynamic>> getProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
-
-    final url = Uri.parse("$baseUrl/profile");
-
-    final response = await http.get(
-      url,
-      headers: {"Accept": "application/json", "Authorization": "Bearer $token"},
-    );
-
-    return jsonDecode(response.body);
+  Future<User?> getProfile() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.profile);
+      if (response.statusCode == 200) {
+        return User.fromJson(response.data);
+      }
+    } catch (e) {
+      // Handle error
+    }
+    return null;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:cozy_home_1/features/auth/service/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterController {
   // Text Controllers
@@ -40,23 +41,14 @@ class RegisterController {
     }
 
     try {
-      // Call API
-      final response = await AuthService.register(
-        name: nameController.text,
-        email: emailController.text,
-        password: passwordController.text,
-        accountType: accountType,
-      );
+      // Save data locally and proceed to personal info
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('fullname', nameController.text);
+      await prefs.setString('phonenumber', emailController.text); // Using email as phone for now
+      await prefs.setString('password', passwordController.text);
+      await prefs.setString('accountType', accountType);
 
-      print("REGISTER RESPONSE: $response");
-
-      // Laravel returns: { message: "...", user: {...} }
-      if (response["user"] != null) {
-        // Navigate to next screen
-        Navigator.pushNamed(context, "/personalInfo");
-      } else {
-        showError(context, response["message"] ?? "Registration failed");
-      }
+      Navigator.pushNamed(context, "/personalInfo");
     } catch (e) {
       showError(context, "Something went wrong. Please try again.");
     }

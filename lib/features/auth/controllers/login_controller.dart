@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'auth_provider.dart';
 import 'package:cozy_home_1/features/renter/screens/homepage.dart';
 import 'package:cozy_home_1/features/owner/screens/owner_home_screen.dart';
 import 'package:cozy_home_1/features/auth/screens/pendingapprovalscreen.dart';
@@ -9,66 +10,50 @@ class LoginController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  Future<void> saveLoginData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('email', emailController.text);
-    await prefs.setString('password', passwordController.text);
-    await prefs.setBool('loggedIn', true);
-  }
-
   Future<void> login(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
-      return;
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-
-    // ⭐ قراءة نوع الحساب
-    String? accountType = prefs.getString("accountType");
-
-    // ⭐ قراءة حالة إكمال الملف الشخصي
-    bool profileCompleted = prefs.getBool("profileCompleted") ?? false;
-
-    // ⭐ قراءة حالة موافقة الأدمن
-    bool adminApproved = prefs.getBool("adminApproved") ?? false;
-
-    await saveLoginData();
-
-    // ⭐ إذا الملف الشخصي غير مكتمل → يرجع على Personal Info
-    if (!profileCompleted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields")),
       );
       return;
     }
 
-    // ⭐ إذا الملف مكتمل لكن الأدمن لم يوافق → Pending Approval
-    if (!adminApproved) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const PendingApprovalScreen()),
-      );
-      return;
-    }
+    // Call real login
+    bool success = await authProvider.login(
+      emailController.text,
+      passwordController.text,
+    );
 
-    // ⭐ إذا كل شيء تمام → يدخل حسب نوع الحساب
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Login Successful ✅")));
+    if (success) {
+      final user = authProvider.user;
+      if (user == null) return;
 
-    if (accountType == "owner") {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const OwnerHomeScreen()),
-      );
+      // Handle profile completion and approval
+      // Note: Assuming logic based on API response fields
+      if (!user.isApproved && user.role != 'admin') {
+         Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const PendingApprovalScreen()),
+        );
+        return;
+      }
+
+      if (user.role == "owner") {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const OwnerHomeScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const RenterHomeScreen()),
+        );
+      }
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const RenterHomeScreen()),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(authProvider.errorMessage ?? "Login Failed")),
       );
     }
   }

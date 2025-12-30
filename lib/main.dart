@@ -10,11 +10,13 @@ import 'package:cozy_home_1/features/auth/screens/personalinfoscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/auth/controllers/theme_provider.dart';
+import 'package:cozy_home_1/features/auth/controllers/auth_provider.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FilterController()),
         ChangeNotifierProvider(create: (_) => BookingController()),
         ChangeNotifierProvider(create: (_) => BookingListController()),

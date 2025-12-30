@@ -4,10 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cozy_home_1/features/auth/screens/otpverificationscreen.dart';
 import '../screens/image_preview_screen.dart';
+import '../service/auth_service.dart';
 
 class PersonalInfoController {
   PersonalInfoController();
 
+  final AuthService _authService = AuthService();
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController birthDateController = TextEditingController();
@@ -78,7 +80,8 @@ class PersonalInfoController {
     );
 
     if (date != null) {
-      birthDateController.text = "${date.day}/${date.month}/${date.year}";
+      // Format as YYYY-MM-DD for the API
+      birthDateController.text = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
       await saveLocalData();
       onChanged();
     }
@@ -106,25 +109,45 @@ class PersonalInfoController {
 
     final prefs = await SharedPreferences.getInstance();
 
-    // حفظ حالة إكمال الملف الشخصي
-    await prefs.setBool("profileCompleted", true);
+    try {
+      // Get data from Register screen
+      String fullname = prefs.getString("fullname") ?? firstNameController.text + " " + lastNameController.text;
+      String phonenumber = prefs.getString("phonenumber") ?? "";
+      String password = prefs.getString("password") ?? "";
+      String role = prefs.getString("accountType") ?? "renter";
+      String birthDate = birthDateController.text;
 
-    // ⭐ جلب الإيميل من الريجستر
-    String email = prefs.getString("email") ?? "";
+      // Call API Register
+      final response = await _authService.register(
+        fullname: fullname,
+        phonenumber: phonenumber,
+        password: password,
+        passwordConfirmation: password, // Use same password for confirmation
+        role: role,
+        birthDate: birthDate,
+        profileImage: profileImage!,
+        idImage: idImage!,
+      );
 
-    // ⭐ إضافة المستخدم لقائمة الطلبات
-    List<String> pending = prefs.getStringList("pendingRequests") ?? [];
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        // Save profile completion status
+        await prefs.setBool("profileCompleted", true);
 
-    if (!pending.contains(email)) {
-      pending.add(email);
-      await prefs.setStringList("pendingRequests", pending);
+        // Navigate to OTP verification or Pending Approval
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const OTPVerificationScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.data["message"] ?? "Registration failed")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error connecting to server")),
+      );
     }
-
-    // ⭐ بعد إدخال المعلومات → ننتقل إلى شاشة التحقق
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const OTPVerificationScreen()),
-    );
   }
 
   void openImagePreview({
