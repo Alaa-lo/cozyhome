@@ -81,7 +81,8 @@ class PersonalInfoController {
 
     if (date != null) {
       // Format as YYYY-MM-DD for the API
-      birthDateController.text = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+      birthDateController.text =
+          "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
       await saveLocalData();
       onChanged();
     }
@@ -111,8 +112,10 @@ class PersonalInfoController {
 
     try {
       // Get data from Register screen
-      String fullname = prefs.getString("fullname") ?? firstNameController.text + " " + lastNameController.text;
-      String phonenumber = prefs.getString("phonenumber") ?? "";
+      String fullname =
+          prefs.getString("fullname") ??
+          firstNameController.text + " " + lastNameController.text;
+      String mobileNumber = prefs.getString("phonenumber") ?? ""; // ✅ تعديل
       String password = prefs.getString("password") ?? "";
       String role = prefs.getString("accountType") ?? "renter";
       String birthDate = birthDateController.text;
@@ -120,7 +123,7 @@ class PersonalInfoController {
       // Call API Register
       final response = await _authService.register(
         fullname: fullname,
-        phonenumber: phonenumber,
+        phonenumber: mobileNumber, // ✅ AuthService صار يرسل mobile_number
         password: password,
         passwordConfirmation: password, // Use same password for confirmation
         role: role,
@@ -140,7 +143,9 @@ class PersonalInfoController {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response.data["message"] ?? "Registration failed")),
+          SnackBar(
+            content: Text(response.data["message"] ?? "Registration failed"),
+          ),
         );
       }
     } catch (e) {

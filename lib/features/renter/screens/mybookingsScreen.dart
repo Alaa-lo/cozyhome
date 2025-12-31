@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
 import 'package:cozy_home_1/features/renter/screens/editbookingsheet.dart';
 import 'package:cozy_home_1/features/renter/screens/rating_screen.dart';
-import 'package:cozy_home_1/features/renter/screens/apartment_details_screen.dart';
 import 'package:cozy_home_1/features/renter/controllers/homepage_controller.dart'; // ⭐ مهم
 import 'package:cozy_home_1/features/renter/models/booking.dart';
 
@@ -23,10 +22,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
   void initState() {
     super.initState();
     tabController = TabController(length: 3, vsync: this);
-    
+
     // ⭐ جلب البيانات عند البداية
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<BookingListController>(context, listen: false).fetchBookings();
+      Provider.of<BookingListController>(
+        context,
+        listen: false,
+      ).fetchBookings();
     });
   }
 
@@ -35,7 +37,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
     return Consumer<BookingListController>(
       builder: (context, controller, _) {
         if (controller.isLoading) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF234E36)));
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF234E36)),
+          );
         }
 
         return Column(

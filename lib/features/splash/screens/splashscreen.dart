@@ -1,4 +1,3 @@
-import 'package:cozy_home_1/features/auth/screens/login.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatelessWidget {

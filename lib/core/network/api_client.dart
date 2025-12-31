@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_endpoints.dart';
@@ -29,44 +30,73 @@ class ApiClient {
           return handler.next(options);
         },
         onError: (DioException e, handler) {
-          // You can handle global errors here (e.g., unauthorized)
           if (e.response?.statusCode == 401) {
-            // Handle token expiration/logout
+            // هنا ممكن تضيف منطق لتسجيل خروج المستخدم أو تجديد التوكن
           }
           return handler.next(e);
         },
       ),
     );
 
-    // Add logging for development
-    dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-    ));
+    dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
   }
 
   // GET request
-  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     return await dio.get(path, queryParameters: queryParameters);
   }
 
   // POST request
-  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
     return await dio.post(path, data: data, queryParameters: queryParameters);
   }
 
   // PUT request
-  Future<Response> put(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> put(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
     return await dio.put(path, data: data, queryParameters: queryParameters);
   }
 
   // PATCH request
-  Future<Response> patch(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> patch(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
     return await dio.patch(path, data: data, queryParameters: queryParameters);
   }
 
   // DELETE request
-  Future<Response> delete(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> delete(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
     return await dio.delete(path, data: data, queryParameters: queryParameters);
+  }
+
+  // ✅ دالة جديدة لرفع الملفات (multipart/form-data)
+  Future<Response> upload(
+    String path, {
+    required Map<String, dynamic> fields,
+    required Map<String, File> files,
+  }) async {
+    final formData = FormData.fromMap({
+      ...fields,
+      for (var entry in files.entries)
+        entry.key: await MultipartFile.fromFile(entry.value.path),
+    });
+
+    return await dio.post(path, data: formData);
   }
 }

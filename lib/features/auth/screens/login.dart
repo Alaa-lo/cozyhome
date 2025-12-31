@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../controllers/auth_provider.dart';
 import '../controllers/login_controller.dart';
 import 'package:cozy_home_1/features/auth/screens/registerscreen.dart';
-import 'package:cozy_home_1/features/auth/controllers/theme_provider.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
@@ -11,57 +10,14 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
     return Scaffold(
+      resizeToAvoidBottomInset:
+          true, // يخلي الشاشة تعيد حساب المساحة مع الكيبورد
       backgroundColor: const Color(0xFFEBEADA),
-
-      // ⭐ AppBar شفاف مع أيقونة السيتينغ
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, color: Color(0xFF375534)),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                builder: (context) {
-                  return Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Dark Mode",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        Switch(
-                          value: themeProvider.isDarkMode,
-                          activeColor: const Color(0xFF375534),
-                          onChanged: (value) {
-                            themeProvider.toggleTheme(value);
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
+          // ✅ إضافة Scroll
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -162,7 +118,9 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => controller.login(context),
+                      onPressed: () async {
+                        await controller.login(context);
+                      },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         backgroundColor: const Color(0xFF375534),

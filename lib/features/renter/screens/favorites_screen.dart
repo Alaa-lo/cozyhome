@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/renter/controllers/homepage_controller.dart';
-import 'package:cozy_home_1/features/renter/models/apartment.dart';
 import 'package:cozy_home_1/features/renter/screens/apartment_details_screen.dart';
 
 class FavoritesScreen extends StatelessWidget {
@@ -49,26 +48,26 @@ class FavoritesScreen extends StatelessWidget {
                             topLeft: Radius.circular(20),
                             topRight: Radius.circular(20),
                           ),
-                        child: apt.images.isNotEmpty
-                            ? (apt.images.first.startsWith('http')
-                                ? Image.network(
-                                    apt.images.first,
-                                    height: 180,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.asset(
-                                    apt.images.first,
-                                    height: 180,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ))
-                            : Container(
-                                height: 180,
-                                width: double.infinity,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.home, size: 50),
-                              ),
+                          child: apt.images.isNotEmpty
+                              ? (apt.images.first.startsWith('http')
+                                    ? Image.network(
+                                        apt.images.first,
+                                        height: 180,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.asset(
+                                        apt.images.first,
+                                        height: 180,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ))
+                              : Container(
+                                  height: 180,
+                                  width: double.infinity,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.home, size: 50),
+                                ),
                         ),
 
                         Padding(

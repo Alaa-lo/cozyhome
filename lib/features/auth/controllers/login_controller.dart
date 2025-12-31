@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
-import 'package:cozy_home_1/features/renter/screens/homepage.dart';
-import 'package:cozy_home_1/features/owner/screens/owner_home_screen.dart';
-import 'package:cozy_home_1/features/auth/screens/pendingapprovalscreen.dart';
-import 'package:cozy_home_1/features/auth/screens/personalinfoscreen.dart';
-import 'package:cozy_home_1/admin/admin_dashboard.dart';
 
 class LoginController {
   final emailController = TextEditingController();
@@ -15,9 +10,9 @@ class LoginController {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
       return;
     }
 

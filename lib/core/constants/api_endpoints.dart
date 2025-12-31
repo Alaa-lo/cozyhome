@@ -1,5 +1,6 @@
 class ApiEndpoints {
-  static const String baseUrl = "http://192.168.0.102:8000/api";
+  static const String baseUrl =
+      "https://nancy-nondisputatious-interlocally.ngrok-free.dev/api";
 
   // Auth
   static const String register = "/register";
@@ -12,7 +13,7 @@ class ApiEndpoints {
   // Apartments
   static const String apartments = "/apartments";
   static String apartmentDetails(int id) => "/apartments/$id";
-  
+
   // Bookings
   static const String bookings = "/bookings";
   static const String myBookings = "/my-bookings";
@@ -28,4 +29,5 @@ class ApiEndpoints {
 
   // Admin
   static String approveUser(int id) => "/admin/users/$id/approve";
+  static String rejectUser(int id) => "/admin/users/$id/reject";
 }

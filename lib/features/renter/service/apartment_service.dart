@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_endpoints.dart';
 import '../models/apartment.dart';
@@ -48,7 +47,9 @@ class ApartmentService {
   // Toggle Favorite
   Future<bool> toggleFavorite(int apartmentId) async {
     try {
-      final response = await _apiClient.post(ApiEndpoints.toggleFavorite(apartmentId));
+      final response = await _apiClient.post(
+        ApiEndpoints.toggleFavorite(apartmentId),
+      );
       return response.statusCode == 200;
     } catch (e) {
       return false;

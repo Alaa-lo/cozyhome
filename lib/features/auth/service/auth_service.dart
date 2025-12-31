@@ -21,21 +21,19 @@ class AuthService {
     required File profileImage,
     required File idImage,
   }) async {
-    String profileImageName = profileImage.path.split('/').last;
-    String idImageName = idImage.path.split('/').last;
+    return await _apiClient.upload(
+      ApiEndpoints.register,
+      fields: {
+        "fullname": fullname,
+        "phonenumber": phonenumber,
 
-    FormData formData = FormData.fromMap({
-      "fullname": fullname,
-      "phonenumber": phonenumber,
-      "password": password,
-      "password_confirmation": passwordConfirmation,
-      "role": role,
-      "birth_date": birthDate,
-      "profile_image": await MultipartFile.fromFile(profileImage.path, filename: profileImageName),
-      "id_image": await MultipartFile.fromFile(idImage.path, filename: idImageName),
-    });
-
-    return await _apiClient.post(ApiEndpoints.register, data: formData);
+        "password": password,
+        "password_confirmation": passwordConfirmation,
+        "role": role,
+        "birth_date": birthDate,
+      },
+      files: {"profile_image": profileImage, "id_image": idImage},
+    );
   }
 
   // ---------------------------
@@ -47,7 +45,7 @@ class AuthService {
   }) async {
     final response = await _apiClient.post(
       ApiEndpoints.login,
-      data: {"phonenumber": phonenumber, "password": password},
+      queryParameters: {"phonenumber": phonenumber, "password": password},
     );
 
     final data = response.data;

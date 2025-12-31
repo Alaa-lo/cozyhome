@@ -46,165 +46,173 @@ class AdminProfileScreen extends StatelessWidget {
                 ),
               ),
 
-              // Content
-              SingleChildScrollView(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 60),
+              // Content (FIXED with Positioned.fill)
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 60),
 
-                    // Top Bar with Back Button
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Color(0xFF234E36)),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                          const Text(
-                            "Admin Profile",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF234E36),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Profile Image
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFB7C9A8), Color(0xFFD6E2C3)],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: const CircleAvatar(
-                          radius: 55,
-                          backgroundColor: Color(0xFFEBEADA),
-                          child: Icon(
-                            Icons.admin_panel_settings,
-                            size: 70,
-                            color: Color(0xFF234E36),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    // Name
-                    Text(
-                      user.fullname,
-                      style: const TextStyle(
-                        fontSize: 23,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF234E36),
-                      ),
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    // Role Tag
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF234E36),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        "SYSTEM ADMINISTRATOR",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // Account Information Section
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Admin Details",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF234E36),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    _softTile(Icons.phone, "Phone Number", user.phonenumber),
-                    _softTile(Icons.email, "Email", user.email ?? "No email"),
-                    _softTile(Icons.person, "Full Name", user.fullname),
-
-                    const SizedBox(height: 35),
-
-                    // Logout Button
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40),
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          await authProvider.logout();
-                          if (context.mounted) {
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              '/login',
-                              (route) => false,
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF234E36),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                            horizontal: 40,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      // Top Bar with Back Button
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
                           children: [
-                            Icon(Icons.logout, color: Color(0xFFEBEADA)),
-                            SizedBox(width: 10),
-                            Text(
-                              "Logout",
+                            IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: Color(0xFF234E36),
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            const Text(
+                              "Admin Profile",
                               style: TextStyle(
-                                color: Color(0xFFEBEADA),
-                                fontSize: 16,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
+                                color: Color(0xFF234E36),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
 
-                    const SizedBox(height: 40),
-                  ],
+                      const SizedBox(height: 40),
+
+                      // Profile Image
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFB7C9A8), Color(0xFFD6E2C3)],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: const CircleAvatar(
+                            radius: 55,
+                            backgroundColor: Color(0xFFEBEADA),
+                            child: Icon(
+                              Icons.admin_panel_settings,
+                              size: 70,
+                              color: Color(0xFF234E36),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      // Name
+                      Text(
+                        user.fullname,
+                        style: const TextStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF234E36),
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      // Role Tag
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF234E36),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          "SYSTEM ADMINISTRATOR",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // Account Information Section
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Admin Details",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF234E36),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      _softTile(Icons.phone, "Phone Number", user.phonenumber),
+                      _softTile(Icons.email, "Email", user.email ?? "No email"),
+                      _softTile(Icons.person, "Full Name", user.fullname),
+
+                      const SizedBox(height: 35),
+
+                      // Logout Button
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await authProvider.logout();
+                            if (context.mounted) {
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                '/login',
+                                (route) => false,
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF234E36),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                              horizontal: 40,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.logout, color: Color(0xFFEBEADA)),
+                              SizedBox(width: 10),
+                              Text(
+                                "Logout",
+                                style: TextStyle(
+                                  color: Color(0xFFEBEADA),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -233,11 +241,11 @@ class AdminProfileScreen extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEBEADA),
+            decoration: const BoxDecoration(
+              color: Color(0xFFEBEADA),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFF234E36), size: 24),
+            child: Icon(icon, color: Color(0xFF234E36), size: 24),
           ),
           const SizedBox(width: 15),
           Column(

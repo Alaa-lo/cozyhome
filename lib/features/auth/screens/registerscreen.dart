@@ -40,22 +40,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 30),
 
+                // First Name
                 _buildField(
-                  label: "Full Name",
+                  label: "First Name",
                   icon: Icons.person_outline,
-                  controller: controller.nameController,
+                  controller: controller.firstNameController,
                 ),
 
                 const SizedBox(height: 16),
 
+                // Last Name
                 _buildField(
-                  label: "Email / Phone",
-                  icon: Icons.email_outlined,
-                  controller: controller.emailController,
+                  label: "Last Name",
+                  icon: Icons.person_outline,
+                  controller: controller.lastNameController,
                 ),
 
                 const SizedBox(height: 16),
 
+                // Phone Number
+                _buildField(
+                  label: "Phone Number",
+                  icon: Icons.phone_outlined,
+                  controller: controller.phoneController,
+                ),
+
+                const SizedBox(height: 16),
+
+                // Password
                 _buildField(
                   label: "Password",
                   icon: Icons.lock_outline,
@@ -65,6 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 16),
 
+                // Confirm Password
                 _buildField(
                   label: "Confirm Password",
                   icon: Icons.lock_outline,
