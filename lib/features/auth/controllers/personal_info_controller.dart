@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 import 'package:cozy_home_1/features/auth/screens/otpverificationscreen.dart';
 import '../screens/image_preview_screen.dart';
 
@@ -23,14 +24,10 @@ class PersonalInfoController {
     birthDateController.text = prefs.getString('birthDate') ?? '';
 
     String? profilePath = prefs.getString('profileImagePath');
-    if (profilePath != null) {
-      profileImage = File(profilePath);
-    }
+    if (profilePath != null) profileImage = File(profilePath);
 
     String? idPath = prefs.getString('idImagePath');
-    if (idPath != null) {
-      idImage = File(idPath);
-    }
+    if (idPath != null) idImage = File(idPath);
   }
 
   Future<void> saveLocalData() async {
@@ -78,7 +75,7 @@ class PersonalInfoController {
     );
 
     if (date != null) {
-      birthDateController.text = "${date.day}/${date.month}/${date.year}";
+      birthDateController.text = "${date.year}-${date.month}-${date.day}";
       await saveLocalData();
       onChanged();
     }
@@ -105,26 +102,57 @@ class PersonalInfoController {
     if (!validateInputs(context)) return;
 
     final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
 
-    // حفظ حالة إكمال الملف الشخصي
-    await prefs.setBool("profileCompleted", true);
-
-    // ⭐ جلب الإيميل من الريجستر
-    String email = prefs.getString("email") ?? "";
-
-    // ⭐ إضافة المستخدم لقائمة الطلبات
-    List<String> pending = prefs.getStringList("pendingRequests") ?? [];
-
-    if (!pending.contains(email)) {
-      pending.add(email);
-      await prefs.setStringList("pendingRequests", pending);
+    if (token == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("User not authenticated")));
+      return;
     }
 
-    // ⭐ بعد إدخال المعلومات → ننتقل إلى شاشة التحقق
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const OTPVerificationScreen()),
-    );
+    try {
+      // ⭐⭐ الرّوت الصحيح ⭐⭐
+      var uri = Uri.parse("http://172.16.0.8:8000/api/profile");
+
+      var request = http.MultipartRequest("POST", uri);
+
+      request.headers["Authorization"] = "Bearer $token";
+      request.headers["Accept"] = "application/json";
+
+      request.fields["first_name"] = firstNameController.text;
+      request.fields["last_name"] = lastNameController.text;
+      request.fields["birth_date"] = birthDateController.text;
+
+      request.files.add(
+        await http.MultipartFile.fromPath("profile_image", profileImage!.path),
+      );
+
+      request.files.add(
+        await http.MultipartFile.fromPath("id_image", idImage!.path),
+      );
+
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+
+      print("PROFILE RESPONSE: $responseBody");
+
+      if (response.statusCode == 200) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const OTPVerificationScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $responseBody")));
+      }
+    } catch (e) {
+      print("ERROR: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
+    }
   }
 
   void openImagePreview({

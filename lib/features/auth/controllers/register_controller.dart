@@ -1,14 +1,15 @@
 import 'package:cozy_home_1/features/auth/service/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterController {
   // Text Controllers
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
+  final fullnameController = TextEditingController();
+  final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-  // Default account type
+  // Default account type (role)
   String accountType = "renter"; // renter OR owner
 
   // Show error message
@@ -21,8 +22,8 @@ class RegisterController {
   // Sign Up logic (API Version)
   Future<void> signUp(BuildContext context) async {
     // Validation
-    if (nameController.text.isEmpty ||
-        emailController.text.isEmpty ||
+    if (fullnameController.text.isEmpty ||
+        phoneController.text.isEmpty ||
         passwordController.text.isEmpty ||
         confirmPasswordController.text.isEmpty) {
       showError(context, "Please fill all fields");
@@ -40,25 +41,37 @@ class RegisterController {
     }
 
     try {
+      print("SIGNUP CLICKED");
+      print("SENDING REQUEST TO API...");
+
       // Call API
       final response = await AuthService.register(
-        name: nameController.text,
-        email: emailController.text,
+        fullname: fullnameController.text,
+        phonenumber: phoneController
+            .text, // سيتم تحويله إلى mobile_number داخل AuthService
         password: passwordController.text,
-        accountType: accountType,
+        role: accountType,
       );
 
       print("REGISTER RESPONSE: $response");
 
       // Laravel returns: { message: "...", user: {...} }
       if (response["user"] != null) {
-        // Navigate to next screen
+        // Save token if exists
+        if (response["access_token"] != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString("token", response["access_token"]);
+        }
+
+        // Navigate to next screen (Personal Info)
         Navigator.pushNamed(context, "/personalInfo");
       } else {
         showError(context, response["message"] ?? "Registration failed");
       }
     } catch (e) {
+      print("ERROR IN SIGNUP: $e");
       showError(context, "Something went wrong. Please try again.");
+      print("ERROR DETAILS: $e");
     }
   }
 }
