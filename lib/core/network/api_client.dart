@@ -91,12 +91,26 @@ class ApiClient {
     required Map<String, dynamic> fields,
     required Map<String, File> files,
   }) async {
+    // Create FormData with fields and files
     final formData = FormData.fromMap({
       ...fields,
       for (var entry in files.entries)
-        entry.key: await MultipartFile.fromFile(entry.value.path),
+        entry.key: await MultipartFile.fromFile(
+          entry.value.path,
+          filename: entry.value.path.split('/').last,
+        ),
     });
 
-    return await dio.post(path, data: formData);
+    // Post request - Dio will automatically set Content-Type to multipart/form-data
+    return await dio.post(
+      path,
+      data: formData,
+      options: Options(
+        contentType: 'multipart/form-data',
+        headers: {
+          'Accept': 'application/json',
+        },
+      ),
+    );
   }
 }

@@ -21,19 +21,27 @@ class AuthService {
     required File profileImage,
     required File idImage,
   }) async {
-    return await _apiClient.upload(
-      ApiEndpoints.register,
-      fields: {
-        "fullname": fullname,
-        "phonenumber": phonenumber,
+    try {
+      // Push registration request to backend
+      final response = await _apiClient.upload(
+        ApiEndpoints.register,
+        fields: {
+          "fullname": fullname,
+          "phonenumber": phonenumber,
+          "password": password,
+          "password_confirmation": passwordConfirmation,
+          "role": role,
+          "birth_date": birthDate,
+        },
+        files: {"profile_image": profileImage, "id_image": idImage},
+      );
 
-        "password": password,
-        "password_confirmation": passwordConfirmation,
-        "role": role,
-        "birth_date": birthDate,
-      },
-      files: {"profile_image": profileImage, "id_image": idImage},
-    );
+      // Return response for further processing
+      return response;
+    } catch (e) {
+      // Re-throw the error so it can be handled by the caller
+      rethrow;
+    }
   }
 
   // ---------------------------
