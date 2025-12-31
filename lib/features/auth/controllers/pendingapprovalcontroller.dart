@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cozy_home_1/features/auth/screens/login.dart';
+import 'package:provider/provider.dart';
+import '../controllers/auth_provider.dart';
+import '../screens/login.dart';
 
 class PendingApprovalController {
-  bool approvalNotified = false; // ⭐ لمعرفة إذا عرضنا السناك بار ولا لأ
-
-  Future<bool> checkAdminApproval() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // fake delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    bool approved = prefs.getBool("adminApproved") ?? false;
-    return approved;
-  }
+  bool approvalNotified = false;
 
   Future<void> checkStatus(BuildContext context) async {
-    bool approved = await checkAdminApproval();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Refresh profile from server
+    await authProvider.fetchProfile();
+
+    bool approved = authProvider.user?.isApproved ?? false;
 
     if (approved) {
       // ⭐ أول مرة: بس نعرض رسالة الموافقة

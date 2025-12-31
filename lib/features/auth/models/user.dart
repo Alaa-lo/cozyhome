@@ -20,16 +20,32 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      fullname: json['fullname'] ?? '',
-      phonenumber: json['phonenumber'] ?? '',
-      role: json['role'] ?? 'renter',
-      birthDate: json['birth_date'],
-      profileImage: json['profile_image'],
-      idImage: json['id_image'],
-      isApproved: json['is_approved'] == 1 || json['is_approved'] == true,
-    );
+    print("User.fromJson: Parsing JSON: $json");
+    try {
+      final userData = json.containsKey('user') ? json['user'] : json;
+      
+      String firstName = userData['first_name'] ?? '';
+      String lastName = userData['last_name'] ?? '';
+      
+      final user = User(
+        id: userData['id'],
+        fullname: userData['fullname'] ?? "$firstName $lastName".trim(),
+        phonenumber: userData['phonenumber'] ?? '',
+        role: userData['role'] ?? 'renter',
+        birthDate: userData['birth_date'],
+        profileImage: userData['profile_image'] ?? userData['profile_image_path'],
+        idImage: userData['id_image'] ?? userData['id_image_path'],
+        isApproved: userData['is_approved'] == 1 || 
+                    userData['is_approved'] == true || 
+                    userData['status'] == 'approved',
+      );
+      print("User.fromJson: Successfully parsed user: ${user.fullname}, role: ${user.role}, isApproved: ${user.isApproved}");
+      return user;
+    } catch (e, stack) {
+      print("User.fromJson ERROR: $e");
+      print(stack);
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {

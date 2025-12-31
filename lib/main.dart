@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/auth/controllers/theme_provider.dart';
 import 'package:cozy_home_1/features/auth/controllers/auth_provider.dart';
+import 'package:cozy_home_1/features/auth/screens/auth_wrapper.dart';
 
 void main() {
   runApp(
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(brightness: Brightness.light),
       darkTheme: ThemeData(brightness: Brightness.dark),
 
-      home: SplashScreen(),
+      home: const AuthWrapper(),
 
       routes: {
         '/login': (context) => LoginScreen(),

@@ -14,6 +14,18 @@ class AuthProvider with ChangeNotifier {
 
   bool get isAuthenticated => _user != null;
 
+  AuthProvider() {
+    tryAutoLogin();
+  }
+
+  Future<void> tryAutoLogin() async {
+    _isLoading = true;
+    notifyListeners();
+    await fetchProfile();
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<bool> login(String phonenumber, String password) async {
     _isLoading = true;
     _errorMessage = null;
@@ -21,12 +33,24 @@ class AuthProvider with ChangeNotifier {
 
     try {
       final data = await _authService.login(phonenumber: phonenumber, password: password);
-      if (data['token'] != null) {
+      final token = data['token'] ?? data['access_token'];
+      if (token != null) {
+        print("AuthProvider: Login token found. Token: ${token.substring(0, 5)}...");
+        if (data['user'] != null) {
+          print("AuthProvider: User data found in login response. Parsing...");
+          _user = User.fromJson(data['user']);
+          print("AuthProvider: User set initially: ${_user?.fullname}, role: ${_user?.role}");
+          notifyListeners();
+        }
+        
+        print("AuthProvider: Fetching fresh profile...");
         await fetchProfile();
+        print("AuthProvider: Profile fetch complete. User: ${_user?.fullname}, role: ${_user?.role}");
         _isLoading = false;
         notifyListeners();
         return true;
-      } else {
+      }
+ else {
         _errorMessage = data['message'] ?? 'Login failed';
       }
     } catch (e) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../controllers/auth_provider.dart';
 import '../controllers/login_controller.dart';
 import 'package:cozy_home_1/features/auth/screens/registerscreen.dart';
 import 'package:cozy_home_1/features/auth/controllers/theme_provider.dart';
@@ -166,9 +167,23 @@ class LoginScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         backgroundColor: const Color(0xFF375534),
                       ),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(color: Colors.white),
+                      child: Consumer<AuthProvider>(
+                        builder: (context, authProvider, _) {
+                          if (authProvider.isLoading) {
+                            return const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            );
+                          }
+                          return const Text(
+                            'Login',
+                            style: TextStyle(color: Colors.white),
+                          );
+                        },
                       ),
                     ),
                   ),

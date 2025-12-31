@@ -2,6 +2,10 @@ import 'package:cozy_home_1/features/auth/screens/login.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatelessWidget {
+  final VoidCallback onStart;
+
+  const SplashScreen({super.key, required this.onStart});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,12 +58,7 @@ class SplashScreen extends StatelessWidget {
               ),
 
               // ✅ التعديل الوحيد هون
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => LoginScreen()),
-                );
-              },
+              onPressed: onStart,
 
               child: const Text(
                 "Start Your Journey",

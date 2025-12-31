@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:cozy_home_1/admin/pending_model.dart';
+import 'package:cozy_home_1/features/auth/models/user.dart';
 import 'package:flutter/material.dart';
 import 'admin_dashboard_controller.dart';
 
@@ -13,7 +13,7 @@ class AdminDashboard extends StatefulWidget {
 class _AdminDashboardState extends State<AdminDashboard> {
   final AdminDashboardController controller = AdminDashboardController();
 
-  late Future<List<PendingUser>> futureUsers;
+  late Future<List<User>> futureUsers;
 
   @override
   void initState() {
@@ -83,12 +83,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       return _userCard(
                         user: user,
                         onApprove: () async {
-                          await controller.approveUser(user.email);
-                          refresh();
+                          if (user.id != null) {
+                            await controller.approveUser(user.id!);
+                            refresh();
+                          }
                         },
                         onReject: () async {
-                          await controller.rejectUser(user.email);
-                          refresh();
+                          if (user.id != null) {
+                            await controller.rejectUser(user.id!);
+                            refresh();
+                          }
                         },
                       );
                     },
@@ -103,7 +107,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Widget _userCard({
-    required PendingUser user,
+    required User user,
     required VoidCallback onApprove,
     required VoidCallback onReject,
   }) {
@@ -130,7 +134,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "${user.firstName} ${user.lastName}",
+                user.fullname,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -140,7 +144,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const SizedBox(height: 6),
 
               Text(
-                "Birth Date: ${user.birthDate}",
+                "Birth Date: ${user.birthDate ?? 'N/A'}",
                 style: const TextStyle(color: Colors.black54),
               ),
 
@@ -148,9 +152,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
               Row(
                 children: [
-                  _imageBox(user.frontImage),
+                   if (user.profileImage != null) _imageBox(user.profileImage!),
                   const SizedBox(width: 10),
-                  _imageBox(user.backImage),
+                   if (user.idImage != null) _imageBox(user.idImage!),
                 ],
               ),
             ],
@@ -197,6 +201,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
         color: Colors.grey.shade300,
         child: const Icon(Icons.image_not_supported),
       );
+    }
+
+    if (path.startsWith('http')) {
+      return Image.network(path, width: 60, height: 60, fit: BoxFit.cover);
     }
 
     return Image.file(File(path), width: 60, height: 60, fit: BoxFit.cover);

@@ -51,11 +51,12 @@ class AuthService {
     );
 
     final data = response.data;
+    final token = data["token"] ?? data["access_token"];
 
     // Save token if exists
-    if (data["token"] != null) {
+    if (token != null) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString("token", data["token"]);
+      await prefs.setString("token", token);
     }
 
     return data;

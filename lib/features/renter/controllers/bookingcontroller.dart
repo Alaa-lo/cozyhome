@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cozy_home_1/features/renter/models/apartment_model.dart';
+import 'package:cozy_home_1/features/renter/models/apartment.dart';
 
 class BookingController extends ChangeNotifier {
   DateTime? checkIn;

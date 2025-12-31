@@ -25,6 +25,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
     super.initState();
     controller = OwnerHomeController();
     controller.initAnimations(this);
+    controller.fetchApartments(); // Fetch real data
 
     _currentPage = _homeContent();
   }
@@ -179,32 +180,32 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                                 ),
                                 const SizedBox(height: 6),
 
-                                Text(
-                                  "Governorate: ${apt.governorate}",
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.black54,
+                                  Text(
+                                    "Province: ${apt.province}",
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black54,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
+                                  const SizedBox(height: 6),
 
-                                Text(
-                                  "City: ${apt.city}",
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.black54,
+                                  Text(
+                                    "City: ${apt.city}",
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black54,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
+                                  const SizedBox(height: 6),
 
-                                Text(
-                                  "Price: \$${apt.price} / ${apt.priceType}",
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF234E36),
+                                  Text(
+                                    "Price: \$${apt.pricePerNight} / Night",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF234E36),
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),

@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../controllers/owner_home_controller.dart';
-import '../models/apartment_model.dart';
+import 'package:cozy_home_1/features/renter/models/apartment.dart';
 
 class EditApartmentScreen extends StatefulWidget {
-  final ApartmentModel apartment;
+  final Apartment apartment;
 
   const EditApartmentScreen({super.key, required this.apartment});
 
@@ -16,11 +16,9 @@ class EditApartmentScreen extends StatefulWidget {
 
 class _EditApartmentScreenState extends State<EditApartmentScreen> {
   late TextEditingController titleController;
-  late TextEditingController governorateController;
+  late TextEditingController provinceController;
   late TextEditingController cityController;
-  late TextEditingController addressController;
   late TextEditingController priceController;
-  late TextEditingController priceTypeController;
 
   List<String> images = [];
 
@@ -29,16 +27,12 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
     super.initState();
 
     titleController = TextEditingController(text: widget.apartment.title);
-    governorateController = TextEditingController(
-      text: widget.apartment.governorate,
+    provinceController = TextEditingController(
+      text: widget.apartment.province,
     );
     cityController = TextEditingController(text: widget.apartment.city);
-    addressController = TextEditingController(text: widget.apartment.address);
     priceController = TextEditingController(
-      text: widget.apartment.price.toString(),
-    );
-    priceTypeController = TextEditingController(
-      text: widget.apartment.priceType,
+      text: widget.apartment.pricePerNight.toString(),
     );
 
     images = List.from(widget.apartment.images);
@@ -155,24 +149,21 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
             const SizedBox(height: 20),
 
             _field("Title", titleController),
-            _field("Governorate", governorateController),
+            _field("Province", provinceController),
             _field("City", cityController),
-            _field("Address", addressController),
             _field("Price", priceController, isNumber: true),
-            _field("Price Type (day/month)", priceTypeController),
 
             const SizedBox(height: 25),
 
             ElevatedButton(
               onPressed: () {
-                final updated = ApartmentModel(
+                final updated = Apartment(
                   id: widget.apartment.id,
                   title: titleController.text,
-                  governorate: governorateController.text,
+                  description: widget.apartment.description, // Keep original description
+                  province: provinceController.text,
                   city: cityController.text,
-                  address: addressController.text,
-                  price: double.tryParse(priceController.text) ?? 0,
-                  priceType: priceTypeController.text,
+                  pricePerNight: double.tryParse(priceController.text) ?? 0,
                   images: images,
                 );
 

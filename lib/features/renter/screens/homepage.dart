@@ -25,6 +25,7 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
     super.initState();
     controller = RenterHomeController();
     controller.initAnimations(this);
+    controller.fetchApartments(); // Fetch real data
 
     _currentPage = _homeContent();
   }
@@ -204,12 +205,26 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                                         topLeft: Radius.circular(20),
                                         topRight: Radius.circular(20),
                                       ),
-                                      child: Image.asset(
-                                        apt.images.first,
-                                        height: 180,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                      ),
+                                      child: apt.images.isNotEmpty
+                                          ? (apt.images.first.startsWith('http')
+                                              ? Image.network(
+                                                  apt.images.first,
+                                                  height: 180,
+                                                  width: double.infinity,
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : Image.asset(
+                                                  apt.images.first,
+                                                  height: 180,
+                                                  width: double.infinity,
+                                                  fit: BoxFit.cover,
+                                                ))
+                                          : Container(
+                                              height: 180,
+                                              width: double.infinity,
+                                              color: Colors.grey[300],
+                                              child: const Icon(Icons.home, size: 50),
+                                            ),
                                     ),
 
                                     Padding(
@@ -229,7 +244,7 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                                           const SizedBox(height: 6),
 
                                           Text(
-                                            "Governorate: ${apt.governorate}",
+                                            "Province: ${apt.province}",
                                             style: const TextStyle(
                                               fontSize: 15,
                                               color: Colors.black54,
@@ -247,7 +262,7 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                                           const SizedBox(height: 6),
 
                                           Text(
-                                            "Price: \$${apt.price} / month",
+                                            "Price: \$${apt.pricePerNight} / month",
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,

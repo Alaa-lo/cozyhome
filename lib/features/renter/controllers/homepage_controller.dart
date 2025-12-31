@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cozy_home_1/features/renter/models/apartment_model.dart';
+import 'package:cozy_home_1/features/renter/models/apartment.dart';
+import 'package:cozy_home_1/features/renter/service/apartment_service.dart';
 
 class RenterHomeController extends ChangeNotifier {
+  final ApartmentService _apartmentService = ApartmentService();
+  
   // ============================
   // 🔹 Animation
   // ============================
@@ -12,80 +15,17 @@ class RenterHomeController extends ChangeNotifier {
   // ============================
   // 🔹 Apartments List
   // ============================
-  final List<Apartment> apartments = [
-    Apartment(
-      title: "Modern Apartment",
-      governorate: "Damascus",
-      city: "Mazzeh",
-      price: 450,
-      images: [
-        "assets/images/appartments/firstappartment.jpg",
-        "assets/images/bathrooms/firstbathroom.jpg",
-        "assets/images/bedrooms/firstbedroom.jpg",
-        "assets/images/kitchens/firstkitchen.jpg",
-      ],
-    ),
-    Apartment(
-      title: "Cozy Home",
-      governorate: "Aleppo",
-      city: "Aziziyeh",
-      price: 350,
-      images: [
-        "assets/images/appartments/secondappartment.jpg",
-        "assets/images/bathrooms/secondbathroom.jpg",
-        "assets/images/bedrooms/secondbedroom.jpg",
-        "assets/images/kitchens/secondkitchen.jpg",
-      ],
-    ),
-    Apartment(
-      title: "Luxury Flat",
-      governorate: "Latakia",
-      city: "Corniche",
-      price: 900,
-      images: [
-        "assets/images/appartments/thirdappartment.jpg",
-        "assets/images/bathrooms/thirdbathroom.jpg",
-        "assets/images/bedrooms/thirdbedroom.jpg",
-        "assets/images/kitchens/thirdkitchen.jpg",
-      ],
-    ),
-    Apartment(
-      title: "family flat",
-      governorate: "Hama",
-      city: "Aziziyeh",
-      price: 900,
-      images: [
-        "assets/images/appartments/fourthappartment.jpg",
-        "assets/images/bathrooms/fourthbathroom.jpg",
-        "assets/images/bedrooms/fourthbedroom.jpg",
-        "assets/images/kitchens/fourthkitchen.jpg",
-      ],
-    ),
-    Apartment(
-      title: "big Flat",
-      governorate: "Aleppo",
-      city: "Alzahraa",
-      price: 900,
-      images: [
-        "assets/images/appartments/fifthappartment.jpg",
-        "assets/images/bathrooms/fifthbathroom.jpg",
-        "assets/images/bedrooms/fifthbedroom.jpg",
-        "assets/images/kitchens/fifthkitchen.jpg",
-      ],
-    ),
-    Apartment(
-      title: "warm Flat",
-      governorate: "Tartous",
-      city: "Alqadmous",
-      price: 900,
-      images: [
-        "assets/images/appartments/sixappartment.jpg",
-        "assets/images/bathrooms/sixbathroom.jpg",
-        "assets/images/bedrooms/sixbedroom.jpg",
-        "assets/images/kitchens/sixkitchen.jpg",
-      ],
-    ),
-  ];
+  List<Apartment> apartments = [];
+  bool isLoading = false;
+
+  Future<void> fetchApartments() async {
+    isLoading = true;
+    notifyListeners();
+    apartments = await _apartmentService.getApartments();
+    filtered = List.from(apartments);
+    isLoading = false;
+    notifyListeners();
+  }
 
   // ============================
   // 🔹 Filtered list
@@ -150,20 +90,20 @@ class RenterHomeController extends ChangeNotifier {
   // 🔹 Apply filters
   // ============================
   void applyFilters(Map<String, dynamic> filters) {
-    String? governorate = filters["governorate"];
+    String? province = filters["governorate"] ?? filters["province"];
     String? city = filters["city"];
     double minPrice = filters["minPrice"];
     double maxPrice = filters["maxPrice"];
 
     filtered = apartments.where((apt) {
-      bool matchesGovernorate =
-          governorate == null || apt.governorate == governorate;
+      bool matchesProvince =
+          province == null || apt.province == province;
 
       bool matchesCity = city == null || apt.city == city;
 
-      bool matchesPrice = apt.price >= minPrice && apt.price <= maxPrice;
+      bool matchesPrice = apt.pricePerNight >= minPrice && apt.pricePerNight <= maxPrice;
 
-      return matchesGovernorate && matchesCity && matchesPrice;
+      return matchesProvince && matchesCity && matchesPrice;
     }).toList();
 
     notifyListeners();

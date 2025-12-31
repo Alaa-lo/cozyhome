@@ -1,7 +1,7 @@
 import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cozy_home_1/features/renter/models/apartment_model.dart';
+import 'package:cozy_home_1/features/renter/models/apartment.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/renter/controllers/bookingcontroller.dart';
@@ -96,11 +96,9 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                             bottomLeft: Radius.circular(20),
                             bottomRight: Radius.circular(20),
                           ),
-                          child: Image.asset(
-                            img,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
+                          child: img.startsWith('http') 
+                              ? Image.network(img, width: double.infinity, fit: BoxFit.cover)
+                              : Image.asset(img, width: double.infinity, fit: BoxFit.cover),
                         );
                       }).toList(),
                     ),
@@ -174,7 +172,7 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                           padding: const EdgeInsets.all(20),
                           child: Column(
                             children: [
-                              _infoRow(Icons.map, widget.apartment.governorate),
+                              _infoRow(Icons.map, widget.apartment.province),
                               const SizedBox(height: 15),
                               _infoRow(
                                 Icons.location_on,
@@ -183,7 +181,7 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                               const SizedBox(height: 15),
                               _infoRow(
                                 Icons.attach_money,
-                                "\$${widget.apartment.price} / month",
+                                "\$${widget.apartment.pricePerNight} / night",
                                 isPrice: true,
                               ),
                             ],
