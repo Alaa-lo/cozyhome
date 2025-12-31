@@ -1,34 +1,26 @@
 import 'package:flutter/material.dart';
-import '../controllers/renterprofilecontroller.dart';
+import 'package:provider/provider.dart';
+import 'package:cozy_home_1/features/auth/controllers/auth_provider.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  late ProfileController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = ProfileController();
-    controller.loadUserData();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEBEADA),
-      body: AnimatedBuilder(
-        animation: controller,
-        builder: (context, _) {
-          if (controller.isLoading) {
+      body: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          final user = authProvider.user;
+
+          if (authProvider.isLoading) {
             return const Center(
               child: CircularProgressIndicator(color: Color(0xFF234E36)),
             );
+          }
+
+          if (user == null) {
+            return const Center(child: Text("User not found"));
           }
 
           return Stack(
@@ -93,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // الاسم
                     Text(
-                      controller.name,
+                      user.fullname,
                       style: const TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.bold,
@@ -105,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // الإيميل
                     Text(
-                      controller.email,
+                      user.email ?? "No email",
                       style: const TextStyle(
                         fontSize: 15,
                         color: Colors.black54,
@@ -133,23 +125,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 10),
 
                     // معلومات
-                    _softTile(Icons.phone, "Phone Number", controller.phone),
-                    _softTile(Icons.email, "Email", controller.email),
-                    _softTile(Icons.person, "Full Name", controller.name),
+                    _softTile(Icons.phone, "Phone Number", user.phonenumber),
+                    _softTile(Icons.email, "Email", user.email ?? "No email"),
+                    _softTile(Icons.person, "Full Name", user.fullname),
 
                     const SizedBox(height: 35),
 
-                    // زر تسجيل خروج (التعديل هنا فقط)
+                    // زر تسجيل خروج
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 40),
                       child: ElevatedButton(
-                        onPressed: () {
-                          controller.logout();
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/login',
-                            (route) => false,
-                          );
+                        onPressed: () async {
+                          await authProvider.logout();
+                          if (context.mounted) {
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              '/login',
+                              (route) => false,
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF234E36),
@@ -183,7 +177,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // تصميم الـ Tiles
   Widget _softTile(IconData icon, String title, String value) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),

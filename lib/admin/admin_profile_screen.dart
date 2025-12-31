@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/auth/controllers/auth_provider.dart';
-import 'package:cozy_home_1/features/owner/controllers/owner_home_controller.dart';
 
-class OwnerProfileScreen extends StatelessWidget {
-  const OwnerProfileScreen({super.key});
+class AdminProfileScreen extends StatelessWidget {
+  const AdminProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEBEADA),
-      body: Consumer2<AuthProvider, OwnerHomeController>(
-        builder: (context, authProvider, ownerController, _) {
+      body: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
           final user = authProvider.user;
 
           if (authProvider.isLoading) {
@@ -21,12 +20,12 @@ class OwnerProfileScreen extends StatelessWidget {
           }
 
           if (user == null) {
-            return const Center(child: Text("User not found"));
+            return const Center(child: Text("Admin data not found"));
           }
 
           return Stack(
             children: [
-              // الهيدر
+              // Header
               Container(
                 height: 240,
                 decoration: const BoxDecoration(
@@ -47,13 +46,36 @@ class OwnerProfileScreen extends StatelessWidget {
                 ),
               ),
 
-              // المحتوى
+              // Content
               SingleChildScrollView(
                 child: Column(
                   children: [
-                    const SizedBox(height: 140),
+                    const SizedBox(height: 60),
 
-                    // الصورة
+                    // Top Bar with Back Button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back, color: Color(0xFF234E36)),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          const Text(
+                            "Admin Profile",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF234E36),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    // Profile Image
                     Center(
                       child: Container(
                         padding: const EdgeInsets.all(4),
@@ -74,7 +96,7 @@ class OwnerProfileScreen extends StatelessWidget {
                           radius: 55,
                           backgroundColor: Color(0xFFEBEADA),
                           child: Icon(
-                            Icons.person,
+                            Icons.admin_panel_settings,
                             size: 70,
                             color: Color(0xFF234E36),
                           ),
@@ -84,7 +106,7 @@ class OwnerProfileScreen extends StatelessWidget {
 
                     const SizedBox(height: 15),
 
-                    // الاسم
+                    // Name
                     Text(
                       user.fullname,
                       style: const TextStyle(
@@ -96,24 +118,32 @@ class OwnerProfileScreen extends StatelessWidget {
 
                     const SizedBox(height: 5),
 
-                    // الإيميل
-                    Text(
-                      user.email ?? "No email",
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.black54,
+                    // Role Tag
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF234E36),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        "SYSTEM ADMINISTRATOR",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
 
                     const SizedBox(height: 30),
 
-                    // عنوان القسم
+                    // Account Information Section
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Account Information",
+                          "Admin Details",
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -125,14 +155,13 @@ class OwnerProfileScreen extends StatelessWidget {
 
                     const SizedBox(height: 10),
 
-                    // معلومات
                     _softTile(Icons.phone, "Phone Number", user.phonenumber),
                     _softTile(Icons.email, "Email", user.email ?? "No email"),
                     _softTile(Icons.person, "Full Name", user.fullname),
 
                     const SizedBox(height: 35),
 
-                    // زر تسجيل خروج
+                    // Logout Button
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 40),
                       child: ElevatedButton(
@@ -156,13 +185,20 @@ class OwnerProfileScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: const Text(
-                          "Logout",
-                          style: TextStyle(
-                            color: Color(0xFFEBEADA),
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.logout, color: Color(0xFFEBEADA)),
+                            SizedBox(width: 10),
+                            Text(
+                              "Logout",
+                              style: TextStyle(
+                                color: Color(0xFFEBEADA),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -200,15 +236,8 @@ class OwnerProfileScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFFEBEADA),
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 6,
-                  offset: const Offset(0, 3),
-                ),
-              ],
             ),
-            child: Icon(icon, color: Color(0xFF234E36), size: 24),
+            child: Icon(icon, color: const Color(0xFF234E36), size: 24),
           ),
           const SizedBox(width: 15),
           Column(

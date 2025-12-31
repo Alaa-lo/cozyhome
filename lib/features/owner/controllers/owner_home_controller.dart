@@ -34,13 +34,11 @@ class OwnerHomeController extends ChangeNotifier {
   Future<void> fetchApartments() async {
     isLoading = true;
     notifyListeners();
-    // Assuming we need a way to fetch ONLY owner apartments. 
-    // For now, using getApartments from renter service or similar.
-    // Actually, maybe the backend filters by token.
-    // Fixed: getApartments usually returns all, but if we are owner we might want our own.
-    // Assuming ApiEndpoints.apartments returns user's apartments if authenticated as owner?
-    // Let's assume the service handle it.
-    // apartments = await _ownerService.getMyApartments(); // Needs to be implemented
+    try {
+      apartments = await _ownerService.getMyApartments();
+    } catch (e) {
+      debugPrint("Error fetching owner apartments: $e");
+    }
     isLoading = false;
     notifyListeners();
   }

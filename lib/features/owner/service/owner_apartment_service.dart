@@ -7,6 +7,21 @@ import '../../renter/models/apartment.dart';
 class OwnerApartmentService {
   final ApiClient _apiClient = ApiClient();
 
+  // Get My Apartments
+  Future<List<Apartment>> getMyApartments() async {
+    try {
+      // Using documented apartments endpoint as no owner-specific one exists in doc
+      final response = await _apiClient.get(ApiEndpoints.apartments);
+      if (response.statusCode == 200) {
+        final List data = response.data;
+        return data.map((json) => Apartment.fromJson(json)).toList();
+      }
+    } catch (e) {
+      // Handle error
+    }
+    return [];
+  }
+
   // Create Apartment
   Future<Response> createApartment({
     required String title,

@@ -4,6 +4,7 @@ class User {
   final String phonenumber;
   final String role;
   final String? birthDate;
+  final String? email;
   final String? profileImage;
   final String? idImage;
   final bool isApproved;
@@ -13,6 +14,7 @@ class User {
     required this.fullname,
     required this.phonenumber,
     required this.role,
+    this.email,
     this.birthDate,
     this.profileImage,
     this.idImage,
@@ -31,6 +33,7 @@ class User {
         id: userData['id'],
         fullname: userData['fullname'] ?? "$firstName $lastName".trim(),
         phonenumber: userData['phonenumber'] ?? '',
+        email: userData['email'],
         role: userData['role'] ?? 'renter',
         birthDate: userData['birth_date'],
         profileImage: userData['profile_image'] ?? userData['profile_image_path'],
@@ -52,6 +55,7 @@ class User {
     return {
       'fullname': fullname,
       'phonenumber': phonenumber,
+      'email': email,
       'role': role,
       'birth_date': birthDate,
       'profile_image': profileImage,

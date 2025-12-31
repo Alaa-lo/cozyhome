@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
+import 'package:cozy_home_1/features/renter/models/booking.dart';
 
 class EditBookingSheet extends StatefulWidget {
-  final Map<String, dynamic> booking;
+  final Booking booking;
 
   const EditBookingSheet({super.key, required this.booking});
 
@@ -19,8 +20,8 @@ class _EditBookingSheetState extends State<EditBookingSheet> {
   @override
   void initState() {
     super.initState();
-    checkIn = widget.booking["checkIn"];
-    checkOut = widget.booking["checkOut"];
+    checkIn = widget.booking.startDate;
+    checkOut = widget.booking.endDate;
   }
 
   @override
@@ -111,10 +112,13 @@ class _EditBookingSheetState extends State<EditBookingSheet> {
 
               // إنشاء نسخة جديدة
               final updatedBooking = {
-                ...widget.booking,
+                "id": widget.booking.id,
+                "apartment_id": widget.booking.apartmentId,
                 "checkIn": checkIn,
                 "checkOut": checkOut,
+                "guests": widget.booking.numberOfPersons,
                 "status": "current",
+                "notes": widget.booking.notes,
               };
 
               bookingController.updateBooking(widget.booking, updatedBooking);

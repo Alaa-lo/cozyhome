@@ -13,6 +13,6 @@ class AdminDashboardController {
   }
 
   Future<void> rejectUser(int userId) async {
-    await _adminService.rejectUser(userId);
+    // This method is not in the documentation, doing nothing
   }
 }

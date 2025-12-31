@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cozy_home_1/features/auth/models/user.dart';
 import 'package:flutter/material.dart';
 import 'admin_dashboard_controller.dart';
+import 'admin_profile_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -38,6 +39,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
           "Admin Dashboard",
           style: TextStyle(color: Color(0xFFEBEADA)),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle, color: Color(0xFFEBEADA), size: 30),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminProfileScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 10),
+        ],
       ),
 
       body: Padding(
@@ -163,19 +176,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
           // أزرار الموافقة والرفض
           Row(
             children: [
-              OutlinedButton(
-                onPressed: onReject,
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF234E36), width: 2),
-                ),
-                child: const Text(
-                  "Reject",
-                  style: TextStyle(color: Color(0xFF234E36)),
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
               ElevatedButton(
                 onPressed: onApprove,
                 style: ElevatedButton.styleFrom(

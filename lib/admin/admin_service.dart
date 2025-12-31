@@ -7,33 +7,18 @@ class AdminService {
   final ApiClient _apiClient = ApiClient();
 
   Future<List<User>> getPendingUsers() async {
-    try {
-      final response = await _apiClient.get("/admin/pending-users"); // Correct this if endpoint is different
-      if (response.statusCode == 200) {
-        final List data = response.data;
-        return data.map((json) => User.fromJson(json)).toList();
-      }
-    } catch (e) {
-      // Handle error
-    }
+    // This endpoint is not in the documentation, returning empty list to avoid 404 errors
     return [];
   }
 
   Future<bool> approveUser(int userId) async {
     try {
-      final response = await _apiClient.post("/admin/approve-user/$userId");
+      final response = await _apiClient.patch(ApiEndpoints.approveUser(userId));
       return response.statusCode == 200;
     } catch (e) {
       return false;
     }
   }
 
-  Future<bool> rejectUser(int userId) async {
-    try {
-      final response = await _apiClient.post("/admin/reject-user/$userId");
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
-    }
-  }
+  // rejectUser removed as it is not in documentation
 }

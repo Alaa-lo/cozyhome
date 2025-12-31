@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
 import 'package:cozy_home_1/features/renter/screens/editbookingsheet.dart';
 import 'package:cozy_home_1/features/renter/screens/rating_screen.dart';
+import 'package:cozy_home_1/features/renter/screens/apartment_details_screen.dart';
 import 'package:cozy_home_1/features/renter/controllers/homepage_controller.dart'; // ⭐ مهم
+import 'package:cozy_home_1/features/renter/models/booking.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
@@ -21,44 +23,55 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
   void initState() {
     super.initState();
     tabController = TabController(length: 3, vsync: this);
+    
+    // ⭐ جلب البيانات عند البداية
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<BookingListController>(context, listen: false).fetchBookings();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<BookingListController>(context);
+    return Consumer<BookingListController>(
+      builder: (context, controller, _) {
+        if (controller.isLoading) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFF234E36)));
+        }
 
-    return Column(
-      children: [
-        Container(
-          color: const Color(0xFF234E36),
-          child: TabBar(
-            controller: tabController,
-            indicatorColor: const Color(0xFFEBEADA),
-            labelColor: const Color(0xFFEBEADA),
-            unselectedLabelColor: Colors.white70,
-            tabs: const [
-              Tab(text: "Current"),
-              Tab(text: "Previous"),
-              Tab(text: "Cancelled"),
-            ],
-          ),
-        ),
+        return Column(
+          children: [
+            Container(
+              color: const Color(0xFF234E36),
+              child: TabBar(
+                controller: tabController,
+                indicatorColor: const Color(0xFFEBEADA),
+                labelColor: const Color(0xFFEBEADA),
+                unselectedLabelColor: Colors.white70,
+                tabs: const [
+                  Tab(text: "Current"),
+                  Tab(text: "Previous"),
+                  Tab(text: "Cancelled"),
+                ],
+              ),
+            ),
 
-        Expanded(
-          child: TabBarView(
-            controller: tabController,
-            children: [
-              _buildList(controller.currentBookings),
-              _buildList(controller.previousBookings),
-              _buildList(controller.cancelledBookings),
-            ],
-          ),
-        ),
-      ],
+            Expanded(
+              child: TabBarView(
+                controller: tabController,
+                children: [
+                  _buildList(controller.currentBookings),
+                  _buildList(controller.previousBookings),
+                  _buildList(controller.cancelledBookings),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildList(List<Map<String, dynamic>> list) {
+  Widget _buildList(List<Booking> list) {
     if (list.isEmpty) return _emptyState();
 
     return ListView.builder(
@@ -66,11 +79,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
       padding: const EdgeInsets.all(20),
       itemCount: list.length,
       itemBuilder: (context, index) {
-        final booking = list[index];
-
-        booking['isFavorite'] ??= false;
-
-        return _bookingCard(booking: booking);
+        return _bookingCard(booking: list[index]);
       },
     );
   }
@@ -108,7 +117,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
     );
   }
 
-  Widget _bookingCard({required Map<String, dynamic> booking}) {
+  Widget _bookingCard({required Booking booking}) {
     final homeController = Provider.of<RenterHomeController>(
       context,
       listen: false,
@@ -146,12 +155,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                   listen: false,
                 );
 
-                final status = booking["status"];
-
-                if (status == "current" || status == "previous") {
-                  bookingController.moveToCancelled(booking);
-                } else if (status == "cancelled") {
-                  bookingController.deleteBooking(booking);
+                if (booking.id != null) {
+                  bookingController.cancelBooking(booking.id!);
                 }
               },
             ),
@@ -166,9 +171,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      "${booking['checkIn'].day}/${booking['checkIn'].month}/${booking['checkIn'].year}"
+                      "${booking.startDate.day}/${booking.startDate.month}/${booking.startDate.year}"
                       "  →  "
-                      "${booking['checkOut'].day}/${booking['checkOut'].month}/${booking['checkOut'].year}",
+                      "${booking.endDate.day}/${booking.endDate.month}/${booking.endDate.year}",
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         color: const Color(0xFF234E36),
@@ -186,7 +191,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                   const Icon(Icons.group, color: Color(0xFF234E36)),
                   const SizedBox(width: 10),
                   Text(
-                    "${booking['guests']} Guest(s)",
+                    "${booking.numberOfPersons} Guest(s)",
                     style: GoogleFonts.poppins(fontSize: 16),
                   ),
                 ],
@@ -194,8 +199,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
 
               const SizedBox(height: 12),
 
-              if (booking['notes'] != null &&
-                  booking['notes'].toString().isNotEmpty)
+              if (booking.notes != null && booking.notes!.isNotEmpty)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -203,7 +207,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        booking['notes'],
+                        booking.notes!,
                         style: GoogleFonts.poppins(fontSize: 15),
                       ),
                     ),
@@ -251,22 +255,22 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                       },
                     ),
 
-                    // ⭐ زر القلب بعد التعديل
-                    IconButton(
-                      icon: Icon(
-                        homeController.isFavorite(booking['apartment'])
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: homeController.isFavorite(booking['apartment'])
-                            ? Colors.pinkAccent
-                            : Colors.black26,
-                        size: 28,
+                    if (booking.apartment != null)
+                      IconButton(
+                        icon: Icon(
+                          homeController.isFavorite(booking.apartment!)
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: homeController.isFavorite(booking.apartment!)
+                              ? Colors.pinkAccent
+                              : Colors.black26,
+                          size: 28,
+                        ),
+                        onPressed: () {
+                          homeController.toggleFavorite(booking.apartment!);
+                          setState(() {});
+                        },
                       ),
-                      onPressed: () {
-                        homeController.toggleFavorite(booking['apartment']);
-                        setState(() {});
-                      },
-                    ),
                   ],
                 ),
               ),

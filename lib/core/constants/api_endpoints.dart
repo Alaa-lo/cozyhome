@@ -7,6 +7,7 @@ class ApiEndpoints {
   static const String logout = "/logout";
   static const String profile = "/profile";
   static const String user = "/user";
+  static const String updateProfile = "/profile"; // POST to update
 
   // Apartments
   static const String apartments = "/apartments";
