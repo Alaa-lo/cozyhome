@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../controllers/auth_provider.dart';
-import '../controllers/admin_login_controller.dart';
-import 'admin_register.dart';
+import 'admin_login_controller.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -66,19 +63,16 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
               const SizedBox(height: 32),
 
-              // Email/Phone Field
+              // Phone Field
               TextField(
-                controller: controller.emailController,
+                controller: controller.phoneController,
                 cursorColor: const Color(0xFF375534),
                 decoration: InputDecoration(
-                  labelText: 'Email / Phone',
-                  hintText: 'Enter your email or phone',
+                  labelText: 'Phone Number',
+                  hintText: 'Enter your phone number',
                   hintStyle: const TextStyle(color: Colors.grey),
                   floatingLabelStyle: const TextStyle(color: Colors.grey),
-                  prefixIcon: const Icon(
-                    Icons.email_outlined,
-                    color: Color(0xFF375534),
-                  ),
+                  prefixIcon: const Icon(Icons.phone, color: Color(0xFF375534)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -109,7 +103,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   hintStyle: const TextStyle(color: Colors.grey),
                   floatingLabelStyle: const TextStyle(color: Colors.grey),
                   prefixIcon: const Icon(
-                    Icons.password_outlined,
+                    Icons.lock_outline,
                     color: Color(0xFF375534),
                   ),
                   border: OutlineInputBorder(
@@ -142,54 +136,18 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     backgroundColor: const Color(0xFF375534),
                   ),
-                  child: Consumer<AuthProvider>(
-                    builder: (context, authProvider, _) {
-                      if (authProvider.isLoading) {
-                        return const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        );
-                      }
-                      return const Text(
-                        'Login as Admin',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
+                  child: const Text(
+                    'Login as Admin',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
 
               const SizedBox(height: 16),
-
-              // Register Link
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AdminRegisterScreen(),
-                    ),
-                  );
-                },
-                child: const Text(
-                  "Don't have an admin account? Register",
-                  style: TextStyle(
-                    color: Color(0xFF234E36),
-                    decoration: TextDecoration.underline,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
 
               // Info Text
               const Text(

@@ -28,6 +28,8 @@ class ApiEndpoints {
   static String toggleFavorite(int id) => "/favorites/toggle/$id";
 
   // Admin
+  static String adminlogin = "/login";
+  static String pendingUsers = "/admin/pending-users";
   static String approveUser(int id) => "/admin/users/$id/approve";
   static String rejectUser(int id) => "/admin/users/$id/reject";
 }

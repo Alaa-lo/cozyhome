@@ -4,17 +4,18 @@ import 'admin_service.dart';
 class AdminDashboardController {
   final AdminService _adminService = AdminService();
 
+  /// جلب المستخدمين بانتظار الموافقة
   Future<List<User>> getPendingUsers() async {
     return await _adminService.getPendingUsers();
   }
 
-  Future<void> approveUser(int userId) async {
-    await _adminService.approveUser(userId);
+  /// الموافقة على مستخدم
+  Future<bool> approveUser(int userId) async {
+    return await _adminService.approveUser(userId);
   }
 
-  Future<void> rejectUser(int userId) async {
-    await _adminService.rejectUser(userId);
+  /// رفض مستخدم
+  Future<bool> rejectUser(int userId) async {
+    return await _adminService.rejectUser(userId);
   }
-
-  // This method is not in the documentation, doing nothing
 }

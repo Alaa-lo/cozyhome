@@ -114,8 +114,8 @@ class PersonalInfoController {
       // Get data from Register screen
       String fullname =
           prefs.getString("fullname") ??
-          firstNameController.text + " " + lastNameController.text;
-      String mobileNumber = prefs.getString("phonenumber") ?? ""; // ✅ تعديل
+          "${firstNameController.text} ${lastNameController.text}";
+      String mobileNumber = prefs.getString("phonenumber") ?? "";
       String password = prefs.getString("password") ?? "";
       String role = prefs.getString("accountType") ?? "renter";
       String birthDate = birthDateController.text;
@@ -123,7 +123,7 @@ class PersonalInfoController {
       // Call API Register
       final response = await _authService.register(
         fullname: fullname,
-        phonenumber: mobileNumber, // ✅ AuthService صار يرسل mobile_number
+        phonenumber: mobileNumber, //  AuthService يرسل mobile_number
         password: password,
         passwordConfirmation: password, // Use same password for confirmation
         role: role,

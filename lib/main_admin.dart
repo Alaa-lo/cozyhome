@@ -1,15 +1,9 @@
-import 'package:cozy_home_1/features/auth/screens/admin_login.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:cozy_home_1/features/auth/controllers/auth_provider.dart';
+import 'package:cozy_home_1/admin/admin_login.dart';
+import 'package:cozy_home_1/admin/admin_dashboard.dart';
 
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
-      child: MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -19,10 +13,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-
+      // شاشة البداية
       home: const AdminLoginScreen(),
-
-      routes: {'/admin_login': (context) => AdminLoginScreen()},
+      // تعريف الـ routes
+      routes: {
+        '/admin_login': (context) => const AdminLoginScreen(),
+        '/admin_dashboard': (context) => const AdminDashboard(),
+      },
     );
   }
 }

@@ -51,7 +51,10 @@ class RegisterController {
       await prefs.setString('accountType', accountType);
 
       // الانتقال لشاشة المعلومات الشخصية
-      Navigator.pushNamed(context, "/personalInfo");
+      Navigator.pushNamed(
+        context,
+        "/personalInfo",
+      ); ///////////////////////////////////////////////////////
     } catch (e) {
       showError(context, "Something went wrong. Please try again.");
     }
