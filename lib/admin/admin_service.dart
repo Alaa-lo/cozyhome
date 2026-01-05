@@ -12,7 +12,7 @@ class AdminService {
     try {
       final response = await _apiClient.get(ApiEndpoints.pendingUsers);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final body = response.data;
 
         // إذا رجع السيرفر List مباشرة
@@ -20,10 +20,17 @@ class AdminService {
           return body.map((json) => User.fromJson(json)).toList();
         }
 
-        // إذا رجع Map وفيه مفتاح data
-        if (body is Map<String, dynamic> && body['data'] is List) {
-          final List<dynamic> data = body['data'];
-          return data.map((json) => User.fromJson(json)).toList();
+        // إذا رجع Map وفيه مفتاح data أو users
+        if (body is Map<String, dynamic>) {
+          if (body['data'] is List) {
+            return (body['data'] as List)
+                .map((json) => User.fromJson(json))
+                .toList();
+          } else if (body['users'] is List) {
+            return (body['users'] as List)
+                .map((json) => User.fromJson(json))
+                .toList();
+          }
         }
 
         debugPrint("Unexpected response format: $body");
@@ -42,7 +49,7 @@ class AdminService {
   Future<bool> approveUser(int userId) async {
     try {
       final response = await _apiClient.patch(ApiEndpoints.approveUser(userId));
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
         debugPrint("approveUser failed: ${response.statusCode}");
@@ -58,7 +65,7 @@ class AdminService {
   Future<bool> rejectUser(int userId) async {
     try {
       final response = await _apiClient.patch(ApiEndpoints.rejectUser(userId));
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
         debugPrint("rejectUser failed: ${response.statusCode}");
@@ -78,22 +85,28 @@ class AdminService {
         data: {"phonenumber": phone, "password": password},
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data;
 
-        // إذا الـ API بيرجع user + token
+        // تخزين التوكن إذا موجود
         final prefs = await SharedPreferences.getInstance();
-        if (data['token'] != null) {
-          await prefs.setString('token', data['token']);
+        if (data is Map<String, dynamic>) {
+          final token = data['access_token'] ?? data['token'];
+          if (token != null) {
+            await prefs.setString('token', token);
+            debugPrint("✅ Token saved: $token");
+          }
         }
 
         // إذا الـ API بيرجع user داخل مفتاح user
-        if (data['user'] != null) {
+        if (data is Map<String, dynamic> && data['user'] != null) {
           return User.fromJson(data['user']);
         }
 
         // إذا بيرجع مباشرةً بيانات المستخدم
-        return User.fromJson(data);
+        if (data is Map<String, dynamic>) {
+          return User.fromJson(data);
+        }
       } else {
         debugPrint("loginAdmin failed: ${response.statusCode}");
         return null;
@@ -102,5 +115,6 @@ class AdminService {
       debugPrint("Error in loginAdmin: $e");
       return null;
     }
+    return null;
   }
 }

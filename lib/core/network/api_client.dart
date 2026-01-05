@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_endpoints.dart';
+import 'package:flutter/foundation.dart';
 
 class ApiClient {
   late Dio dio;
@@ -26,6 +27,9 @@ class ApiClient {
           final token = prefs.getString('token');
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
+            debugPrint("🚀 Sending request with token: Bearer $token");
+          } else {
+            debugPrint("⚠️ No token found in SharedPreferences");
           }
           return handler.next(options);
         },
@@ -107,9 +111,7 @@ class ApiClient {
       data: formData,
       options: Options(
         contentType: 'multipart/form-data',
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: {'Accept': 'application/json'},
       ),
     );
   }

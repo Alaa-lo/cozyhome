@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:cozy_home_1/features/auth/models/user.dart';
 import 'package:flutter/material.dart';
+import 'package:cozy_home_1/features/auth/models/user.dart';
 import 'admin_dashboard_controller.dart';
 import 'admin_profile_screen.dart';
 
@@ -13,8 +13,10 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard> {
   final AdminDashboardController controller = AdminDashboardController();
-
   late Future<List<User>> futureUsers;
+
+  final Map<int, bool> _loadingApprove = {};
+  final Map<int, bool> _loadingReject = {};
 
   @override
   void initState() {
@@ -102,42 +104,36 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         user: user,
                         onApprove: () async {
                           if (user.id != null) {
-                            final success = await controller.approveUser(
+                            setState(() => _loadingApprove[user.id!] = true);
+                            final message = await controller.approveUser(
                               user.id!,
                             );
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    success
-                                        ? "User approved successfully"
-                                        : "Failed to approve user",
-                                  ),
-                                ),
-                              );
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text(message)));
                             }
+                            setState(() => _loadingApprove[user.id!] = false);
                             refresh();
                           }
                         },
                         onReject: () async {
                           if (user.id != null) {
-                            final success = await controller.rejectUser(
+                            setState(() => _loadingReject[user.id!] = true);
+                            final message = await controller.rejectUser(
                               user.id!,
                             );
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    success
-                                        ? "User rejected successfully"
-                                        : "Failed to reject user",
-                                  ),
-                                ),
-                              );
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text(message)));
                             }
+                            setState(() => _loadingReject[user.id!] = false);
                             refresh();
                           }
                         },
+                        isLoadingApprove: _loadingApprove[user.id] ?? false,
+                        isLoadingReject: _loadingReject[user.id] ?? false,
                       );
                     },
                   );
@@ -154,6 +150,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
     required User user,
     required VoidCallback onApprove,
     required VoidCallback onReject,
+    required bool isLoadingApprove,
+    required bool isLoadingReject,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -161,6 +159,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF234E36), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -186,6 +185,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ),
               const SizedBox(height: 6),
               Text(
+                "Phone: ${user.phonenumber}",
+                style: const TextStyle(color: Colors.black54),
+              ),
+              const SizedBox(height: 6),
+              Text(
                 "Birth Date: ${user.birthDate ?? 'N/A'}",
                 style: const TextStyle(color: Colors.black54),
               ),
@@ -203,23 +207,49 @@ class _AdminDashboardState extends State<AdminDashboard> {
           Row(
             children: [
               ElevatedButton(
-                onPressed: onApprove,
+                onPressed: isLoadingApprove ? null : onApprove,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF234E36),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                child: const Text(
-                  "Approve",
-                  style: TextStyle(color: Color(0xFFEBEADA)),
-                ),
+                child: isLoadingApprove
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFFEBEADA),
+                        ),
+                      )
+                    : const Text(
+                        "Approve",
+                        style: TextStyle(color: Color(0xFFEBEADA)),
+                      ),
               ),
               const SizedBox(width: 8),
               ElevatedButton(
-                onPressed: onReject,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text(
-                  "Reject",
-                  style: TextStyle(color: Colors.white),
+                onPressed: isLoadingReject ? null : onReject,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
+                child: isLoadingReject
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        "Reject",
+                        style: TextStyle(color: Colors.white),
+                      ),
               ),
             ],
           ),
@@ -238,8 +268,40 @@ class _AdminDashboardState extends State<AdminDashboard> {
       );
     }
     if (path.startsWith('http')) {
-      return Image.network(path, width: 60, height: 60, fit: BoxFit.cover);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          path,
+          width: 60,
+          height: 60,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: 60,
+              height: 60,
+              color: Colors.grey.shade300,
+              child: const Icon(Icons.broken_image),
+            );
+          },
+        ),
+      );
     }
-    return Image.file(File(path), width: 60, height: 60, fit: BoxFit.cover);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.file(
+        File(path),
+        width: 60,
+        height: 60,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 60,
+            height: 60,
+            color: Colors.grey.shade300,
+            child: const Icon(Icons.broken_image),
+          );
+        },
+      ),
+    );
   }
 }
