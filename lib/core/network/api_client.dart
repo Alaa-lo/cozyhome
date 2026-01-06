@@ -33,11 +33,10 @@ class ApiClient {
           }
           return handler.next(options);
         },
-        onError: (DioException e, handler) {
-          if (e.response?.statusCode == 401) {
-            // هنا ممكن تضيف منطق لتسجيل خروج المستخدم أو تجديد التوكن
-          }
-          return handler.next(e);
+        onError: (error, handler) {
+          debugPrint("API ERROR: ${error.response?.statusCode}");
+          debugPrint("API BODY: ${error.response?.data}");
+          return handler.next(error);
         },
       ),
     );
@@ -50,7 +49,14 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? queryParameters,
   }) async {
-    return await dio.get(path, queryParameters: queryParameters);
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    return await dio.get(
+      path,
+      queryParameters: queryParameters,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
   }
 
   // POST request
