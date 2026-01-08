@@ -25,10 +25,10 @@ class User {
     print("User.fromJson: Parsing JSON: $json");
     try {
       final userData = json.containsKey('user') ? json['user'] : json;
-      
+
       String firstName = userData['first_name'] ?? '';
       String lastName = userData['last_name'] ?? '';
-      
+
       final user = User(
         id: userData['id'],
         fullname: userData['fullname'] ?? "$firstName $lastName".trim(),
@@ -36,13 +36,14 @@ class User {
         email: userData['email'],
         role: userData['role'] ?? 'renter',
         birthDate: userData['birth_date'],
-        profileImage: userData['profile_image'] ?? userData['profile_image_path'],
-        idImage: userData['id_image'] ?? userData['id_image_path'],
-        isApproved: userData['is_approved'] == 1 || 
-                    userData['is_approved'] == true || 
-                    userData['status'] == 'approved',
+        // ✅ تعديل أسماء الحقول لتطابق الباك إند
+        profileImage: userData['photo_url'],
+        idImage: userData['id_img_url'],
+        isApproved: userData['status'] == 'approved',
       );
-      print("User.fromJson: Successfully parsed user: ${user.fullname}, role: ${user.role}, isApproved: ${user.isApproved}");
+      print(
+        "User.fromJson: Successfully parsed user: ${user.fullname}, role: ${user.role}, isApproved: ${user.isApproved}",
+      );
       return user;
     } catch (e, stack) {
       print("User.fromJson ERROR: $e");
@@ -53,13 +54,16 @@ class User {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'fullname': fullname,
       'phonenumber': phonenumber,
       'email': email,
       'role': role,
       'birth_date': birthDate,
-      'profile_image': profileImage,
-      'id_image': idImage,
+      // ✅ نفس أسماء الحقول يلي الباك إند بيرجعها
+      'photo_url': profileImage,
+      'id_img_url': idImage,
+      'status': isApproved ? 'approved' : 'pending',
     };
   }
 }

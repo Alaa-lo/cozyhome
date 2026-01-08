@@ -2,14 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cozy_home_1/features/auth/screens/otpverificationscreen.dart';
 import '../screens/image_preview_screen.dart';
 import '../service/auth_service.dart';
+import '../screens/otpverificationscreen.dart';
 
 class PersonalInfoController {
-  PersonalInfoController();
-
   final AuthService _authService = AuthService();
+
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController birthDateController = TextEditingController();
@@ -25,14 +24,10 @@ class PersonalInfoController {
     birthDateController.text = prefs.getString('birthDate') ?? '';
 
     String? profilePath = prefs.getString('profileImagePath');
-    if (profilePath != null) {
-      profileImage = File(profilePath);
-    }
+    if (profilePath != null) profileImage = File(profilePath);
 
     String? idPath = prefs.getString('idImagePath');
-    if (idPath != null) {
-      idImage = File(idPath);
-    }
+    if (idPath != null) idImage = File(idPath);
   }
 
   Future<void> saveLocalData() async {
@@ -80,7 +75,6 @@ class PersonalInfoController {
     );
 
     if (date != null) {
-      // Format as YYYY-MM-DD for the API
       birthDateController.text =
           "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
       await saveLocalData();
@@ -94,12 +88,14 @@ class PersonalInfoController {
         birthDateController.text.isEmpty ||
         profileImage == null ||
         idImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please complete all fields"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Please complete all fields"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       return false;
     }
     return true;
@@ -111,21 +107,22 @@ class PersonalInfoController {
     final prefs = await SharedPreferences.getInstance();
 
     try {
-      // Get data from Register screen
       String fullname =
           prefs.getString("fullname") ??
           "${firstNameController.text} ${lastNameController.text}";
+
       String mobileNumber = prefs.getString("phonenumber") ?? "";
       String password = prefs.getString("password") ?? "";
       String role = prefs.getString("accountType") ?? "renter";
       String birthDate = birthDateController.text;
 
-      // Call API Register
+      print("ROLE SENT TO SERVER: $role");
+
       final response = await _authService.register(
         fullname: fullname,
-        phonenumber: mobileNumber, //  AuthService يرسل mobile_number
+        phonenumber: mobileNumber,
         password: password,
-        passwordConfirmation: password, // Use same password for confirmation
+        passwordConfirmation: password,
         role: role,
         birthDate: birthDate,
         profileImage: profileImage!,
@@ -133,25 +130,29 @@ class PersonalInfoController {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        // Save profile completion status
         await prefs.setBool("profileCompleted", true);
 
-        // Navigate to OTP verification or Pending Approval
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const OTPVerificationScreen()),
-        );
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const OTPVerificationScreen()),
+          );
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response.data["message"] ?? "Registration failed"),
-          ),
-        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.data["message"] ?? "Registration failed"),
+            ),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error connecting to server")),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error connecting to server")),
+        );
+      }
     }
   }
 
@@ -163,25 +164,27 @@ class PersonalInfoController {
     final File? imageFile = isProfile ? profileImage : idImage;
     if (imageFile == null) return;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ImagePreviewScreen(
-          imageFile: imageFile,
-          onDelete: () async {
-            if (isProfile) {
-              profileImage = null;
-            } else {
-              idImage = null;
-            }
-            await saveLocalData();
-            onChanged();
-          },
-          onReplace: () async {
-            await pickImage(isProfile: isProfile, onChanged: onChanged);
-          },
+    if (context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ImagePreviewScreen(
+            imageFile: imageFile,
+            onDelete: () async {
+              if (isProfile) {
+                profileImage = null;
+              } else {
+                idImage = null;
+              }
+              await saveLocalData();
+              onChanged();
+            },
+            onReplace: () async {
+              await pickImage(isProfile: isProfile, onChanged: onChanged);
+            },
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 }

@@ -1,46 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../controllers/auth_provider.dart';
 import '../screens/login.dart';
 
-class PendingApprovalController {
-  bool approvalNotified = false;
+class PendingApprovalController extends ChangeNotifier {
+  bool isLoading = false;
 
   Future<void> checkStatus(BuildContext context) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    isLoading = true;
+    notifyListeners();
 
-    // Refresh profile from server
-    await authProvider.fetchProfile();
-
-    bool approved = authProvider.user?.isApproved ?? false;
-
-    if (approved) {
-      // ⭐ أول مرة: بس نعرض رسالة الموافقة
-      if (!approvalNotified) {
-        approvalNotified = true;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Your account has been approved!"),
-            backgroundColor: Colors.green,
-          ),
-        );
-        return; // ⭐ ما ننتقل لسه
-      }
-
-      // ⭐ ثاني مرة: ننتقل للّوغ إن
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => LoginScreen()),
-      );
-    } else {
-      // ⭐ إذا ما وافق الأدمن
+    try {
+      // عرض رسالة الموافقة مباشرة
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Your account is still under review"),
+          content: Text("Your account is approved. Redirecting..."),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // انتظار بسيط قبل الانتقال
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 }

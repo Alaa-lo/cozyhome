@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cozy_home_1/features/auth/models/user.dart';
 import 'admin_dashboard_controller.dart';
-import 'admin_profile_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -40,22 +39,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           "Admin Dashboard",
           style: TextStyle(color: Color(0xFFEBEADA)),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.account_circle,
-              color: Color(0xFFEBEADA),
-              size: 30,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AdminProfileScreen()),
-              );
-            },
-          ),
-          const SizedBox(width: 10),
-        ],
+        actions: [const SizedBox(width: 10)],
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),

@@ -15,22 +15,9 @@ class AdminService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final body = response.data;
 
-        // إذا رجع السيرفر List مباشرة
+        // ✅ السيرفر بيرجع List مباشرة
         if (body is List) {
           return body.map((json) => User.fromJson(json)).toList();
-        }
-
-        // إذا رجع Map وفيه مفتاح data أو users
-        if (body is Map<String, dynamic>) {
-          if (body['data'] is List) {
-            return (body['data'] as List)
-                .map((json) => User.fromJson(json))
-                .toList();
-          } else if (body['users'] is List) {
-            return (body['users'] as List)
-                .map((json) => User.fromJson(json))
-                .toList();
-          }
         }
 
         debugPrint("Unexpected response format: $body");
@@ -81,7 +68,7 @@ class AdminService {
   Future<User?> loginAdmin(String phone, String password) async {
     try {
       final response = await _apiClient.post(
-        ApiEndpoints.adminlogin,
+        ApiEndpoints.adminLogin,
         data: {"phonenumber": phone, "password": password},
       );
 

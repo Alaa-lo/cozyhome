@@ -28,6 +28,7 @@ class ApiClient {
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
             debugPrint("🚀 Sending request with token: Bearer $token");
+            print("🚀 Sending request with token: Bearer $token");
           } else {
             debugPrint("⚠️ No token found in SharedPreferences");
           }
@@ -55,18 +56,50 @@ class ApiClient {
     return await dio.get(
       path,
       queryParameters: queryParameters,
-      options: Options(headers: {'Authorization': 'Bearer $token'}),
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+          // أضف السطر التالي هنا
+          'ngrok-skip-browser-warning': 'true',
+          'Accept': 'application/json',
+        },
+      ),
     );
   }
 
-  // POST request
   Future<Response> post(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
-    return await dio.post(path, data: data, queryParameters: queryParameters);
+    try {
+      return await dio.post(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: Options(
+          // إذا كنت ترسل صور (FormData)، نترك Dio يحدد الـ Boundary تلقائياً
+          // إذا كانت بيانات عادية، نستخدم JSON
+          contentType: data is FormData ? null : 'application/json',
+        ),
+      );
+    } on DioException catch (e) {
+      // طباعة الخطأ بشكل مفصل في الـ Console لمعرفة السبب الحقيقي
+      print("Dio Error Path: ${e.requestOptions.path}");
+      print("Dio Error Message: ${e.message}");
+      print("Dio Error Response: ${e.response?.data}");
+      rethrow;
+    }
   }
+
+  // POST request
+  /*Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return await dio.post(path, data: data, queryParameters: queryParameters);
+  }*/
 
   // PUT request
   Future<Response> put(
