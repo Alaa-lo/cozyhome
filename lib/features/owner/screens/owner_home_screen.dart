@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:cozy_home_1/features/owner/controllers/owner_home_controller.dart';
+import 'package:cozy_home_1/features/owner/service/owner_apartment_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/owner/screens/add_apartment_screen.dart';
@@ -23,73 +23,86 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
   @override
   void initState() {
     super.initState();
-    controller = OwnerHomeController();
+
+    controller = Provider.of<OwnerHomeController>(context, listen: false);
+
     controller.initAnimations(this);
-    controller.fetchApartments(); // Fetch real data
+    controller.fetchApartments();
 
     _currentPage = _homeContent();
   }
 
   @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: controller,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFEBEADA),
+    return Scaffold(
+      backgroundColor: const Color(0xFFEBEADA),
 
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF234E36),
-          elevation: 0,
-          title: const Text(
-            "Owner",
-            style: TextStyle(
-              color: Color(0xFFEBEADA),
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-            ),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF234E36),
+        elevation: 0,
+        title: const Text(
+          "Owner",
+          style: TextStyle(
+            color: Color(0xFFEBEADA),
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add, color: Color(0xFFEBEADA)),
-              onPressed: () async {
-                final newApartment = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AddApartmentScreen()),
-                );
-
-                if (newApartment != null) {
-                  controller.addApartment(newApartment);
-                }
-              },
-            ),
-
-            IconButton(
-              icon: const Icon(
-                Icons.notifications_none,
-                color: Color(0xFFEBEADA),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const OwnerNotificationsScreen(),
-                  ),
-                );
-              },
-            ),
-          ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add, color: Color(0xFFEBEADA)),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AddApartmentScreen()),
+              );
 
-        body: Column(children: [Expanded(child: _currentPage)]),
+              if (result != null) {
+                final apartment = result["apartment"];
+                final images = result["images"];
 
-        bottomNavigationBar: _buildConvexNavBar(),
+                try {
+                  // 🔥 استدعاء السيرفس الجديد الذي يرجع Apartment
+                  final createdApt = await OwnerApartmentService()
+                      .createApartment(apartment: apartment, images: images);
+
+                  // 🔥 إضافة الشقة للواجهة
+                  controller.addApartment(createdApt);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Apartment created successfully"),
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Failed to create apartment")),
+                  );
+                }
+              }
+            },
+          ),
+
+          IconButton(
+            icon: const Icon(
+              Icons.notifications_none,
+              color: Color(0xFFEBEADA),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const OwnerNotificationsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
+
+      body: Column(children: [Expanded(child: _currentPage)]),
+
+      bottomNavigationBar: _buildConvexNavBar(),
     );
   }
 
@@ -138,17 +151,14 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // -----------------------------
-                          // إصلاح عرض الصورة هنا فقط
-                          // -----------------------------
                           ClipRRect(
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20),
                             ),
                             child: apt.images.isNotEmpty
-                                ? Image.file(
-                                    File(apt.images.first),
+                                ? Image.network(
+                                    apt.images.first,
                                     height: 180,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
@@ -180,32 +190,32 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                                 ),
                                 const SizedBox(height: 6),
 
-                                  Text(
-                                    "Province: ${apt.province}",
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.black54,
-                                    ),
+                                Text(
+                                  "Province: ${apt.province}",
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black54,
                                   ),
-                                  const SizedBox(height: 6),
+                                ),
+                                const SizedBox(height: 6),
 
-                                  Text(
-                                    "City: ${apt.city}",
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.black54,
-                                    ),
+                                Text(
+                                  "City: ${apt.city}",
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black54,
                                   ),
-                                  const SizedBox(height: 6),
+                                ),
+                                const SizedBox(height: 6),
 
-                                  Text(
-                                    "Price: \$${apt.pricePerNight} / Night",
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF234E36),
-                                    ),
+                                Text(
+                                  "Price: \$${apt.pricePerNight} / Night",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF234E36),
                                   ),
+                                ),
                               ],
                             ),
                           ),

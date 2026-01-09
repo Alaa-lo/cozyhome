@@ -237,11 +237,10 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                     if (_formKey.currentState!.validate()) {
                       // تعبئة الكونترولر بالبيانات
                       controller.setTitle(_titleController.text);
-                      controller.setGovernorate(_selectedGovernorate!);
+                      controller.setProvince(_selectedGovernorate!);
                       controller.setCity(_selectedCity!);
                       controller.setAddress(_addressController.text);
                       controller.setPrice(_priceController.text);
-                      controller.setPriceType(_priceType);
 
                       // إضافة الصور
                       for (var img in _images) {
@@ -252,7 +251,10 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                       final apartment = controller.buildModel();
 
                       // رجوع الشقة للصفحة السابقة
-                      Navigator.pop(context, apartment);
+                      Navigator.pop(context, {
+                        "apartment": apartment,
+                        "images": controller.imageFiles,
+                      });
                     }
                   },
 

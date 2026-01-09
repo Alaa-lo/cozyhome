@@ -1,69 +1,80 @@
-class ApartmentModel {
-  String id;
-  String title;
-  String governorate;
-  String city;
-  String address;
-  double price;
-  String priceType;
-  List<String> images;
+class Apartment {
+  final int? id;
+  final String title;
+  final String description;
+  final String city;
+  final String province;
+  final String? address; // اختياري
+  final double pricePerNight;
+  final List<String> images;
+  final int? ownerId;
+  final bool isFavorite;
 
-  ApartmentModel({
-    required this.id,
+  Apartment({
+    this.id,
     required this.title,
-    required this.governorate,
+    required this.description,
     required this.city,
-    required this.address,
-    required this.price,
-    required this.priceType,
-    required List<String> images,
-  }) : images = images.length > 4 ? images.sublist(0, 4) : images;
+    required this.province,
+    this.address,
+    required this.pricePerNight,
+    this.images = const [],
+    this.ownerId,
+    this.isFavorite = false,
+  });
 
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "title": title,
-      "governorate": governorate,
-      "city": city,
-      "address": address,
-      "price": price,
-      "priceType": priceType,
-      "images": images,
-    };
-  }
-
-  factory ApartmentModel.fromJson(Map<String, dynamic> json) {
-    return ApartmentModel(
-      id: json["id"],
-      title: json["title"],
-      governorate: json["governorate"],
-      city: json["city"],
-      address: json["address"],
-      price: (json["price"] as num).toDouble(),
-      priceType: json["priceType"],
-      images: List<String>.from(json["images"] ?? []),
+  factory Apartment.fromJson(Map<String, dynamic> json) {
+    return Apartment(
+      id: json['id'],
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      city: json['city'] ?? '',
+      province: json['province'] ?? '',
+      address: json['address'], // إذا موجود
+      pricePerNight: (json['price_per_night'] != null)
+          ? double.tryParse(json['price_per_night'].toString()) ?? 0.0
+          : 0.0,
+      images: json['images'] != null ? List<String>.from(json['images']) : [],
+      ownerId: json['owner_id'],
+      isFavorite: json['is_favorite'] ?? false,
     );
   }
 
-  ApartmentModel copyWith({
-    String? id,
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'city': city,
+      'province': province,
+      'address': address,
+      'price_per_night': pricePerNight,
+      'images': images,
+    };
+  }
+
+  Apartment copyWith({
+    int? id,
     String? title,
-    String? governorate,
+    String? description,
     String? city,
+    String? province,
     String? address,
-    double? price,
-    String? priceType,
+    double? pricePerNight,
     List<String>? images,
+    int? ownerId,
+    bool? isFavorite,
   }) {
-    return ApartmentModel(
+    return Apartment(
       id: id ?? this.id,
       title: title ?? this.title,
-      governorate: governorate ?? this.governorate,
+      description: description ?? this.description,
       city: city ?? this.city,
+      province: province ?? this.province,
       address: address ?? this.address,
-      price: price ?? this.price,
-      priceType: priceType ?? this.priceType,
+      pricePerNight: pricePerNight ?? this.pricePerNight,
       images: images ?? this.images,
+      ownerId: ownerId ?? this.ownerId,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 }

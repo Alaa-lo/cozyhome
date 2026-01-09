@@ -3,67 +3,86 @@ import 'package:cozy_home_1/features/renter/models/apartment.dart';
 import 'package:cozy_home_1/features/owner/service/owner_apartment_service.dart';
 
 class OwnerHomeController extends ChangeNotifier {
-  final OwnerApartmentService _ownerService = OwnerApartmentService();
-  
-  late AnimationController navController;
+  final OwnerApartmentService _service = OwnerApartmentService();
+
+  List<Apartment> apartments = [];
+
+  late AnimationController animationController;
   late Animation<double> curveAnimation;
 
   int selectedIndex = 0;
 
-  List<Apartment> apartments = [];
-  bool isLoading = false;
-
+  // ---------------- INIT ANIMATIONS ----------------
   void initAnimations(TickerProvider vsync) {
-    navController = AnimationController(
+    animationController = AnimationController(
       vsync: vsync,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 600),
     );
 
     curveAnimation = CurvedAnimation(
-      parent: navController,
+      parent: animationController,
       curve: Curves.easeOut,
     );
+
+    animationController.forward();
   }
 
-  void onNavTapped(int index, VoidCallback onComplete) {
-    selectedIndex = index;
-    navController.forward(from: 0).then((_) => onComplete());
-    notifyListeners();
-  }
-
+  // ---------------- FETCH APARTMENTS ----------------
   Future<void> fetchApartments() async {
-    isLoading = true;
-    notifyListeners();
     try {
-      apartments = await _ownerService.getMyApartments();
+      final data = await _service.getMyApartments();
+      apartments = data;
+      notifyListeners();
     } catch (e) {
-      debugPrint("Error fetching owner apartments: $e");
+      print("Error fetching apartments: $e");
     }
-    isLoading = false;
+  }
+
+  // ---------------- ADD APARTMENT ----------------
+  void addApartment(Apartment apartment) {
+    apartments.insert(0, apartment); // إضافة الشقة في أول القائمة
     notifyListeners();
   }
 
-  void addApartment(Apartment apt) {
-    apartments.add(apt);
-    notifyListeners();
+  // ---------------- UPDATE APARTMENT ----------------
+  Future<void> updateApartment(Apartment updated) async {
+    try {
+      final newApt = await _service.updateApartment(updated);
+
+      final index = apartments.indexWhere((a) => a.id == updated.id);
+      if (index != -1) {
+        apartments[index] = newApt;
+        notifyListeners();
+      }
+    } catch (e) {
+      print("Update error: $e");
+    }
   }
 
-  void deleteApartment(int id) {
-    apartments.removeWhere((apt) => apt.id == id);
-    notifyListeners();
-  }
+  // ---------------- DELETE APARTMENT ----------------
+  Future<void> deleteApartment(int id) async {
+    final success = await _service.deleteApartment(id);
 
-  void updateApartment(Apartment updated) {
-    final i = apartments.indexWhere((apt) => apt.id == updated.id);
-    if (i != -1) {
-      apartments[i] = updated;
+    if (success) {
+      apartments.removeWhere((apt) => apt.id == id);
       notifyListeners();
     }
   }
 
+  // ---------------- NAVIGATION HANDLER ----------------
+  void onNavTapped(int index, VoidCallback onPageChanged) {
+    selectedIndex = index;
+
+    animationController.reset();
+    animationController.forward();
+
+    onPageChanged();
+    notifyListeners();
+  }
+
   @override
   void dispose() {
-    navController.dispose();
+    animationController.dispose();
     super.dispose();
   }
 }

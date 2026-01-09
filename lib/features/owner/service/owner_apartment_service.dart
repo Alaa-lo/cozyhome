@@ -10,89 +10,111 @@ class OwnerApartmentService {
   // Get My Apartments
   Future<List<Apartment>> getMyApartments() async {
     try {
-      // Using documented apartments endpoint as no owner-specific one exists in doc
       final response = await _apiClient.get(ApiEndpoints.apartments);
+
       if (response.statusCode == 200) {
         final List data = response.data;
         return data.map((json) => Apartment.fromJson(json)).toList();
       }
     } catch (e) {
-      // Handle error
+      print("Error fetching apartments: $e");
     }
     return [];
   }
 
-  // Create Apartment
-  Future<Response> createApartment({
-    required String title,
-    required String description,
-    required String city,
-    required String province,
-    required double pricePerNight,
+  // ---------------- CREATE APARTMENT ----------------
+  Future<Apartment> createApartment({
+    required Apartment apartment,
     required List<File> images,
   }) async {
-    List<MultipartFile> multipartImages = [];
-    for (var image in images) {
-      String fileName = image.path.split('/').last;
-      multipartImages.add(
-        await MultipartFile.fromFile(image.path, filename: fileName),
+    try {
+      // تجهيز الصور
+      List<MultipartFile> multipartImages = [];
+
+      for (var image in images) {
+        String fileName = image.path.split('/').last;
+        multipartImages.add(
+          await MultipartFile.fromFile(image.path, filename: fileName),
+        );
+      }
+
+      // تجهيز البيانات
+      FormData formData = FormData.fromMap({
+        "title": apartment.title,
+        "description": apartment.description,
+        "city": apartment.city,
+        "province": apartment.province,
+        "address": apartment.address,
+        "price_per_night": apartment.pricePerNight,
+        "images[]": multipartImages,
+      });
+
+      // إرسال الطلب
+      final response = await _apiClient.post(
+        ApiEndpoints.apartments,
+        data: formData,
       );
+
+      // تحويل الرد إلى موديل Apartment
+      return Apartment.fromJson(response.data);
+    } catch (e) {
+      print("Error creating apartment: $e");
+      rethrow;
     }
-
-    FormData formData = FormData.fromMap({
-      "title": title,
-      "description": description,
-      "city": city,
-      "province": province,
-      "price_per_night": pricePerNight,
-      "images[]": multipartImages,
-    });
-
-    return await _apiClient.post(ApiEndpoints.apartments, data: formData);
   }
 
-  // Update Apartment
-  Future<Response> updateApartment(int id, {
-    String? title,
-    String? description,
-    String? city,
-    String? province,
-    double? pricePerNight,
-  }) async {
-    final Map<String, dynamic> data = {};
-    if (title != null) data['title'] = title;
-    if (description != null) data['description'] = description;
-    if (city != null) data['city'] = city;
-    if (province != null) data['province'] = province;
-    if (pricePerNight != null) data['price_per_night'] = pricePerNight;
+  // ---------------- UPDATE APARTMENT ----------------
+  Future<Apartment> updateApartment(Apartment apartment) async {
+    try {
+      final data = {
+        "title": apartment.title,
+        "description": apartment.description,
+        "city": apartment.city,
+        "province": apartment.province,
+        "price_per_night": apartment.pricePerNight,
+      };
 
-    return await _apiClient.put(ApiEndpoints.apartmentDetails(id), data: data);
+      final response = await _apiClient.put(
+        ApiEndpoints.apartmentDetails(apartment.id!),
+        data: data,
+      );
+
+      return Apartment.fromJson(response.data);
+    } catch (e) {
+      print("Error updating apartment: $e");
+      rethrow;
+    }
   }
 
-  // Delete Apartment
+  // ---------------- DELETE APARTMENT ----------------
   Future<bool> deleteApartment(int id) async {
     try {
-      final response = await _apiClient.delete(ApiEndpoints.apartmentDetails(id));
+      final response = await _apiClient.delete(
+        ApiEndpoints.apartmentDetails(id),
+      );
       return response.statusCode == 200;
     } catch (e) {
       return false;
     }
   }
 
-  // Approve Booking
+  // ---------------- OWNER BOOKING ACTIONS ----------------
   Future<bool> approveBooking(int bookingId) async {
     try {
-      final response = await _apiClient.patch(ApiEndpoints.approveBooking(bookingId));
+      final response = await _apiClient.patch(
+        ApiEndpoints.approveBooking(bookingId),
+      );
       return response.statusCode == 200;
     } catch (e) {
       return false;
     }
   }
 
-  // Reject Booking
   Future<bool> rejectBooking(int bookingId) async {
     try {
-      final response = await _apiClient.patch(ApiEndpoints.rejectBooking(bookingId));
+      final response = await _apiClient.patch(
+        ApiEndpoints.rejectBooking(bookingId),
+      );
       return response.statusCode == 200;
     } catch (e) {
       return false;

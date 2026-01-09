@@ -8,22 +8,22 @@ class ApiEndpoints {
   };
 
   // ---------------- Auth ----------------
-  static const String register = "/register"; // POST
-  static const String login = "/login"; // POST
-  static const String logout = "/logout"; // POST (auth)
-  static const String user = "/user"; // GET (auth)
-  static const String profile = "/profile"; // GET (auth)
-  static const String updateProfile = "/profile"; // POST (auth)
+  static const String register = "/register"; // POSTتم
+  static const String login = "/login"; // POSTتم
+  static const String logout = "/logout"; // POST (auth)تم
+  static const String user = "/user"; // GET (auth)تم
+  static const String profile = "/profile"; // GET (auth)تم
+  static const String updateProfile = "/profile"; // POST (auth)تم
 
   // ---------------- Apartments ----------------
   static const String apartments = "/apartments"; // GET
   static String apartmentDetails(int id) => "/apartments/$id"; // GET
   static const String createApartment =
-      "/apartments"; // POST (auth + role:owner)
+      "/apartments"; // POST (auth + role:owner)تم
   static String updateApartment(int id) =>
-      "/apartments/$id"; // PUT (auth + role:owner)
+      "/apartments/$id"; // PUT (auth + role:owner)تم
   static String deleteApartment(int id) =>
-      "/apartments/$id"; // DELETE (auth + role:owner)
+      "/apartments/$id"; // DELETE (auth + role:owner)تم
 
   // ---------------- Bookings ----------------
   static const String bookings = "/bookings"; // POST (auth)
@@ -47,9 +47,9 @@ class ApiEndpoints {
       "/favorites/toggle/$id"; // POST (auth)
 
   // ---------------- Admin ----------------
-  static const String adminLogin = "/admin/login-as-default"; // POST
+  static const String adminLogin = "/admin/login-as-default"; // POSTتم
   static const String pendingUsers =
-      "/admin/pending-users"; // GET (auth + role:admin)
-  static String approveUser(int id) => "/admin/users/$id/approve"; // PATCH
-  static String rejectUser(int id) => "/admin/users/$id/reject"; // PATCH
+      "/admin/pending-users"; // GET (auth + role:admin)تم
+  static String approveUser(int id) => "/admin/users/$id/approve"; // PATCHتم
+  static String rejectUser(int id) => "/admin/users/$id/reject"; // PATCHتم
 }
