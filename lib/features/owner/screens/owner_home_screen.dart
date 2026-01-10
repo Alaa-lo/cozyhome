@@ -109,12 +109,31 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
   Widget _homeContent() {
     return Consumer<OwnerHomeController>(
       builder: (context, controller, _) {
+        if (controller.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF234E36)),
+          );
+        }
+
+        if (controller.errorMessage != null) {
+          return Center(
+            child: Text(
+              controller.errorMessage!,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          );
+        }
+
         if (controller.apartments.isEmpty) {
           return const Center(
             child: Text(
-              "Owner Home",
+              "No apartments found",
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 18,
                 color: Color(0xFF234E36),
                 fontWeight: FontWeight.bold,
               ),
@@ -122,6 +141,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
           );
         }
 
+        // 🔥 هون نفس ListView اللي كان عندك
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: controller.apartments.length,
@@ -174,7 +194,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                                     ),
                                   ),
                           ),
-
                           Padding(
                             padding: const EdgeInsets.all(16),
                             child: Column(
@@ -189,7 +208,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-
                                 Text(
                                   "Province: ${apt.province}",
                                   style: const TextStyle(
@@ -198,7 +216,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-
                                 Text(
                                   "City: ${apt.city}",
                                   style: const TextStyle(
@@ -207,7 +224,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-
                                 Text(
                                   "Price: \$${apt.pricePerNight} / Night",
                                   style: const TextStyle(

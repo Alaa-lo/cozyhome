@@ -13,8 +13,23 @@ class OwnerApartmentService {
       final response = await _apiClient.get(ApiEndpoints.apartments);
 
       if (response.statusCode == 200) {
-        final List data = response.data;
-        return data.map((json) => Apartment.fromJson(json)).toList();
+        print("🔍 Apartments response: ${response.data}");
+
+        // إذا الـ API يرجع بهالشكل: { "data": [ ... ] }
+        final body = response.data;
+
+        List list;
+
+        if (body is List) {
+          list = body;
+        } else if (body is Map<String, dynamic> && body['data'] is List) {
+          list = body['data'];
+        } else {
+          print("⚠️ Unexpected response format in getMyApartments");
+          return [];
+        }
+
+        return list.map((json) => Apartment.fromJson(json)).toList();
       }
     } catch (e) {
       print("Error fetching apartments: $e");

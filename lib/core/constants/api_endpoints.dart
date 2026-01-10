@@ -16,8 +16,9 @@ class ApiEndpoints {
   static const String updateProfile = "/profile"; // POST (auth)تم
 
   // ---------------- Apartments ----------------
-  static const String apartments = "/apartments"; // GET
-  static String apartmentDetails(int id) => "/apartments/$id"; // GET
+  static const String apartments = "/apartments"; // GET////بدي اربطو
+  static String apartmentDetails(int id) =>
+      "/apartments/$id"; // GET////بدي اربطو
   static const String createApartment =
       "/apartments"; // POST (auth + role:owner)تم
   static String updateApartment(int id) =>

@@ -7,6 +7,9 @@ class OwnerHomeController extends ChangeNotifier {
 
   List<Apartment> apartments = [];
 
+  bool isLoading = false;
+  String? errorMessage;
+
   late AnimationController animationController;
   late Animation<double> curveAnimation;
 
@@ -30,11 +33,24 @@ class OwnerHomeController extends ChangeNotifier {
   // ---------------- FETCH APARTMENTS ----------------
   Future<void> fetchApartments() async {
     try {
+      isLoading = true;
+      errorMessage = null;
+      notifyListeners();
+
       final data = await _service.getMyApartments();
       apartments = data;
+
+      if (apartments.isEmpty) {
+        print("⚠️ No apartments found");
+      }
+
+      isLoading = false;
       notifyListeners();
     } catch (e) {
       print("Error fetching apartments: $e");
+      isLoading = false;
+      errorMessage = "Failed to load apartments";
+      notifyListeners();
     }
   }
 
