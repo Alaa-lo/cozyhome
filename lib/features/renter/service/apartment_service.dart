@@ -1,17 +1,21 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_endpoints.dart';
 import 'package:cozy_home_1/core/models/apartment_model.dart';
+import 'package:flutter/foundation.dart';
 
 class ApartmentService {
   final ApiClient _apiClient = ApiClient();
 
-  // List apartments with filters
+  // ================================
+  // 🔹 Get Apartments (Home Screen)
+  // ================================
   Future<List<Apartment>> getApartments({
     String? city,
     String? province,
     double? maxPrice,
   }) async {
     final Map<String, dynamic> queryParams = {};
+
     if (city != null) queryParams['city'] = city;
     if (province != null) queryParams['province'] = province;
     if (maxPrice != null) queryParams['max_price'] = maxPrice;
@@ -21,52 +25,91 @@ class ApartmentService {
         ApiEndpoints.apartments,
         queryParameters: queryParams,
       );
+
       if (response.statusCode == 200) {
-        final List data = response.data;
-        return data.map((json) => Apartment.fromJson(json)).toList();
+        final data = response.data;
+
+        // 🔍 إذا الـ API يرجع List مباشرة
+        if (data is List) {
+          return data.map((json) => Apartment.fromJson(json)).toList();
+        }
+
+        // 🔍 إذا الـ API يرجع { data: [...] }
+        if (data is Map && data['data'] is List) {
+          return (data['data'] as List)
+              .map((json) => Apartment.fromJson(json))
+              .toList();
+        }
+
+        debugPrint("⚠️ Unexpected apartments response format: $data");
       }
-    } catch (e) {
-      // Handle error
+    } catch (e, s) {
+      debugPrint("❌ Error in getApartments: $e");
+      debugPrint("STACK: $s");
     }
+
     return [];
   }
 
-  // View apartment details
+  // ================================
+  // 🔹 Apartment Details
+  // ================================
   Future<Apartment?> getApartmentDetails(int id) async {
     try {
       final response = await _apiClient.get(ApiEndpoints.apartmentDetails(id));
+
       if (response.statusCode == 200) {
         return Apartment.fromJson(response.data);
       }
-    } catch (e) {
-      // Handle error
+    } catch (e, s) {
+      debugPrint("❌ Error in getApartmentDetails: $e");
+      debugPrint("STACK: $s");
     }
     return null;
   }
 
-  // Toggle Favorite
+  // ================================
+  // 🔹 Toggle Favorite
+  // ================================
   Future<bool> toggleFavorite(int apartmentId) async {
     try {
       final response = await _apiClient.post(
         ApiEndpoints.toggleFavorite(apartmentId),
       );
+
       return response.statusCode == 200;
-    } catch (e) {
+    } catch (e, s) {
+      debugPrint("❌ Error in toggleFavorite: $e");
+      debugPrint("STACK: $s");
       return false;
     }
   }
 
-  // List Favorites
+  // ================================
+  // 🔹 Get Favorites
+  // ================================
   Future<List<Apartment>> getFavorites() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.favorites);
+
       if (response.statusCode == 200) {
-        final List data = response.data;
-        return data.map((json) => Apartment.fromJson(json)).toList();
+        final data = response.data;
+
+        if (data is List) {
+          return data.map((json) => Apartment.fromJson(json)).toList();
+        }
+
+        if (data is Map && data['data'] is List) {
+          return (data['data'] as List)
+              .map((json) => Apartment.fromJson(json))
+              .toList();
+        }
       }
-    } catch (e) {
-      // Handle error
+    } catch (e, s) {
+      debugPrint("❌ Error in getFavorites: $e");
+      debugPrint("STACK: $s");
     }
+
     return [];
   }
 }
