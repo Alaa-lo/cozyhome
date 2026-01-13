@@ -20,6 +20,7 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
   late TextEditingController cityController;
   late TextEditingController priceController;
   late TextEditingController descriptionController;
+  late TextEditingController addressController;
 
   List<String> images = [];
 
@@ -36,6 +37,10 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
     descriptionController = TextEditingController(
       text: widget.apartment.description,
     );
+
+    addressController = TextEditingController(
+      text: widget.apartment.address ?? "",
+    ); // ⭐ جديد
 
     images = List.from(widget.apartment.images);
   }
@@ -153,6 +158,10 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
             _field("Title", titleController),
             _field("Province", provinceController),
             _field("City", cityController),
+
+            // ⭐ الحقل الجديد
+            _field("Detailed Address", addressController),
+
             _field("Price", priceController, isNumber: true),
             _field("Description", descriptionController),
 
@@ -166,9 +175,10 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
                   description: descriptionController.text,
                   province: provinceController.text,
                   city: cityController.text,
+                  address: addressController.text, // ⭐ مهم جداً
                   pricePerNight: double.tryParse(priceController.text) ?? 0,
                   images: images,
-                  rentType: widget.apartment.rentType, // نحتفظ بالقيمة الأصلية
+                  rentType: widget.apartment.rentType,
                 );
 
                 controller.updateApartment(updated);
