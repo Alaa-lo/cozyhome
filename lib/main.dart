@@ -26,9 +26,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => RatingController()),
         ChangeNotifierProvider(create: (_) => RenterHomeController()),
         ChangeNotifierProvider(create: (_) => OwnerHomeController()),
-        ChangeNotifierProvider(
-          create: (_) => PendingApprovalController(),
-        ), // ✅ أضفناه هنا
+        ChangeNotifierProvider(create: (_) => PendingApprovalController()),
       ],
       child: const MyApp(),
     ),

@@ -1,22 +1,20 @@
-import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cozy_home_1/core/models/apartment_model.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:provider/provider.dart';
-import 'package:cozy_home_1/features/renter/controllers/bookingcontroller.dart';
-import 'package:cozy_home_1/features/renter/screens/bookingscreen.dart';
 
-class ApartmentDetailsScreen extends StatefulWidget {
+class OwnerApartmentDetailsScreen extends StatefulWidget {
   final Apartment apartment;
 
-  const ApartmentDetailsScreen({super.key, required this.apartment});
+  const OwnerApartmentDetailsScreen({super.key, required this.apartment});
 
   @override
-  State<ApartmentDetailsScreen> createState() => _ApartmentDetailsScreenState();
+  State<OwnerApartmentDetailsScreen> createState() =>
+      _OwnerApartmentDetailsScreenState();
 }
 
-class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
+class _OwnerApartmentDetailsScreenState
+    extends State<OwnerApartmentDetailsScreen>
     with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
 
@@ -59,6 +57,10 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
 
       appBar: AppBar(
         backgroundColor: const Color(0xFF234E36),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFFEBEADA)),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           widget.apartment.title,
           style: const TextStyle(color: Color(0xFFEBEADA)),
@@ -225,7 +227,7 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF234E36),
+                          color: Color(0xFF234E36),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -233,96 +235,6 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                       Text(
                         "A beautiful apartment located in a quiet area with modern design and spacious rooms.",
                         style: GoogleFonts.poppins(fontSize: 16),
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      // زر Book Now
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF234E36),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-
-                              onPressed: () async {
-                                // ⭐ تمرير الشقة للكونترولر
-                                Provider.of<BookingController>(
-                                  context,
-                                  listen: false,
-                                ).setApartment(widget.apartment);
-
-                                final bookingData = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const BookingScreen(),
-                                  ),
-                                );
-
-                                if (bookingData != null) {
-                                  bookingData["apartment"] =
-                                      widget.apartment; // ⭐ التعديل الصحيح
-
-                                  Provider.of<BookingListController>(
-                                    context,
-                                    listen: false,
-                                  ).addBooking(bookingData);
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "Booking added to Current Bookings",
-                                      ),
-                                      backgroundColor: Color(0xFF234E36),
-                                    ),
-                                  );
-                                }
-                              },
-
-                              child: Text(
-                                "Book Now",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  color: const Color(0xFFEBEADA),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(width: 12),
-
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: Color(0xFF234E36),
-                                  width: 2,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onPressed: () {},
-                              child: Text(
-                                "Contact Owner",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  color: Color(0xFF234E36),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
 
                       const SizedBox(height: 40),

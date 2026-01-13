@@ -4,8 +4,9 @@ class Apartment {
   final String description;
   final String city;
   final String province;
-  final String? address; // اختياري
+  final String? address;
   final double pricePerNight;
+  final String rentType;
   final List<String> images;
   final int? ownerId;
   final bool isFavorite;
@@ -18,6 +19,7 @@ class Apartment {
     required this.province,
     this.address,
     required this.pricePerNight,
+    required this.rentType,
     this.images = const [],
     this.ownerId,
     this.isFavorite = false,
@@ -26,14 +28,17 @@ class Apartment {
   factory Apartment.fromJson(Map<String, dynamic> json) {
     return Apartment(
       id: json['id'],
-      title: json['title'] ?? '',
+      title: json['apartment_name'] ?? json['title'] ?? '',
       description: json['description'] ?? '',
       city: json['city'] ?? '',
-      province: json['province'] ?? '',
-      address: json['address'], // إذا موجود
-      pricePerNight: (json['price_per_night'] != null)
+      province: json['governorate'] ?? json['province'] ?? '',
+      address: json['detailed_address'] ?? json['address'],
+      pricePerNight: (json['price'] != null)
+          ? double.tryParse(json['price'].toString()) ?? 0.0
+          : (json['price_per_night'] != null)
           ? double.tryParse(json['price_per_night'].toString()) ?? 0.0
           : 0.0,
+      rentType: json['rent_type'] ?? 'Monthly',
       images: json['images'] != null ? List<String>.from(json['images']) : [],
       ownerId: json['owner_id'],
       isFavorite: json['is_favorite'] ?? false,
@@ -42,12 +47,13 @@ class Apartment {
 
   Map<String, dynamic> toJson() {
     return {
-      'title': title,
+      'apartment_name': title,
       'description': description,
       'city': city,
-      'province': province,
-      'address': address,
-      'price_per_night': pricePerNight,
+      'governorate': province,
+      'detailed_address': address,
+      'price': pricePerNight,
+      'rent_type': rentType,
       'images': images,
     };
   }
@@ -60,6 +66,7 @@ class Apartment {
     String? province,
     String? address,
     double? pricePerNight,
+    String? rentType,
     List<String>? images,
     int? ownerId,
     bool? isFavorite,
@@ -72,6 +79,7 @@ class Apartment {
       province: province ?? this.province,
       address: address ?? this.address,
       pricePerNight: pricePerNight ?? this.pricePerNight,
+      rentType: rentType ?? this.rentType,
       images: images ?? this.images,
       ownerId: ownerId ?? this.ownerId,
       isFavorite: isFavorite ?? this.isFavorite,

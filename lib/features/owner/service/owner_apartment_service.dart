@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'dart:io';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_endpoints.dart';
-import '../../renter/models/apartment.dart';
+import 'package:cozy_home_1/core/models/apartment_model.dart';
 
 class OwnerApartmentService {
   final ApiClient _apiClient = ApiClient();
@@ -13,11 +13,7 @@ class OwnerApartmentService {
       final response = await _apiClient.get(ApiEndpoints.apartments);
 
       if (response.statusCode == 200) {
-        print("🔍 Apartments response: ${response.data}");
-
-        // إذا الـ API يرجع بهالشكل: { "data": [ ... ] }
         final body = response.data;
-
         List list;
 
         if (body is List) {
@@ -25,7 +21,6 @@ class OwnerApartmentService {
         } else if (body is Map<String, dynamic> && body['data'] is List) {
           list = body['data'];
         } else {
-          print("⚠️ Unexpected response format in getMyApartments");
           return [];
         }
 
@@ -37,43 +32,78 @@ class OwnerApartmentService {
     return [];
   }
 
+  // ---------------- OWNER APARTMENTS  ----------------
+  Future<List<Apartment>> getOwnerApartments() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.ownerApartments);
+
+      if (response.statusCode == 200) {
+        final body = response.data;
+
+        if (body is List) {
+          return body.map((e) => Apartment.fromJson(e)).toList();
+        }
+
+        if (body is Map<String, dynamic> && body["data"] is List) {
+          return (body["data"] as List)
+              .map((e) => Apartment.fromJson(e))
+              .toList();
+        }
+      }
+    } catch (e) {
+      print("Error fetching owner apartments: $e");
+    }
+
+    return [];
+  }
+
   // ---------------- CREATE APARTMENT ----------------
   Future<Apartment> createApartment({
     required Apartment apartment,
     required List<File> images,
   }) async {
     try {
-      // تجهيز الصور
       List<MultipartFile> multipartImages = [];
-
       for (var image in images) {
-        String fileName = image.path.split('/').last;
         multipartImages.add(
-          await MultipartFile.fromFile(image.path, filename: fileName),
+          await MultipartFile.fromFile(
+            image.path,
+            filename: image.path.split('/').last,
+          ),
         );
       }
 
-      // تجهيز البيانات
       FormData formData = FormData.fromMap({
-        "title": apartment.title,
-        "description": apartment.description,
+        "apartment_name": apartment.title,
+        "governorate": apartment.province,
         "city": apartment.city,
-        "province": apartment.province,
-        "address": apartment.address,
-        "price_per_night": apartment.pricePerNight,
+        "detailed_address": apartment.address,
+        "price": apartment.pricePerNight.toString(),
+        "rent_type": apartment.rentType.toLowerCase(),
+        "description": apartment.description,
         "images[]": multipartImages,
       });
 
-      // إرسال الطلب
       final response = await _apiClient.post(
         ApiEndpoints.apartments,
         data: formData,
       );
 
-      // تحويل الرد إلى موديل Apartment
-      return Apartment.fromJson(response.data);
+      final data = response.data;
+
+      if (data is Map<String, dynamic>) {
+        if (data.containsKey('data')) {
+          return Apartment.fromJson(data['data']);
+        }
+        if (data.containsKey('apartment')) {
+          return Apartment.fromJson(data['apartment']);
+        }
+        return Apartment.fromJson(data);
+      }
+
+      throw Exception("Unexpected response format");
     } catch (e) {
-      print("Error creating apartment: $e");
+      print("❌ Error creating apartment detail: $e");
       rethrow;
     }
   }
@@ -82,11 +112,13 @@ class OwnerApartmentService {
   Future<Apartment> updateApartment(Apartment apartment) async {
     try {
       final data = {
-        "title": apartment.title,
-        "description": apartment.description,
+        "apartment_name": apartment.title,
+        "governorate": apartment.province,
         "city": apartment.city,
-        "province": apartment.province,
-        "price_per_night": apartment.pricePerNight,
+        "detailed_address": apartment.address,
+        "price": apartment.pricePerNight,
+        "rent_type": apartment.rentType.toLowerCase(),
+        "description": apartment.description,
       };
 
       final response = await _apiClient.put(
@@ -94,6 +126,11 @@ class OwnerApartmentService {
         data: data,
       );
 
+      final responseData = response.data;
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('data')) {
+        return Apartment.fromJson(responseData['data']);
+      }
       return Apartment.fromJson(response.data);
     } catch (e) {
       print("Error updating apartment: $e");
@@ -101,7 +138,7 @@ class OwnerApartmentService {
     }
   }
 
-  // ---------------- DELETE APARTMENT ----------------
+  // ---------------- DELETE / APPROVE / REJECT ----------------
   Future<bool> deleteApartment(int id) async {
     try {
       final response = await _apiClient.delete(
@@ -113,7 +150,6 @@ class OwnerApartmentService {
     }
   }
 
-  // ---------------- OWNER BOOKING ACTIONS ----------------
   Future<bool> approveBooking(int bookingId) async {
     try {
       final response = await _apiClient.patch(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cozy_home_1/features/renter/models/apartment.dart';
+import 'package:cozy_home_1/core/models/apartment_model.dart';
 import 'package:cozy_home_1/features/owner/service/owner_apartment_service.dart';
 
 class OwnerHomeController extends ChangeNotifier {
@@ -54,20 +54,47 @@ class OwnerHomeController extends ChangeNotifier {
     }
   }
 
+  // ---------------- OWNER APARTMENTS ----------------
+  Future<void> loadOwnerApartments() async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      final data = await _service.getOwnerApartments();
+      apartments = data;
+
+      isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      print("Error loading owner apartments: $e");
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // ---------------- ADD APARTMENT ----------------
   void addApartment(Apartment apartment) {
-    apartments.insert(0, apartment); // إضافة الشقة في أول القائمة
+    apartments.insert(0, apartment);
     notifyListeners();
   }
 
-  // ---------------- UPDATE APARTMENT ----------------
   Future<void> updateApartment(Apartment updated) async {
     try {
-      final newApt = await _service.updateApartment(updated);
+      await _service.updateApartment(updated);
 
       final index = apartments.indexWhere((a) => a.id == updated.id);
       if (index != -1) {
-        apartments[index] = newApt;
+        // 🔥 دمج القديم مع الجديد بدل استبدال كامل
+        apartments[index] = apartments[index].copyWith(
+          title: updated.title,
+          description: updated.description,
+          city: updated.city,
+          province: updated.province,
+          pricePerNight: updated.pricePerNight,
+          // الصور تبقى كما هي لأن السيرفر لا يرجعها
+          images: apartments[index].images,
+        );
+
         notifyListeners();
       }
     } catch (e) {
@@ -93,6 +120,12 @@ class OwnerHomeController extends ChangeNotifier {
     animationController.forward();
 
     onPageChanged();
+
+    // 🔥 التحميل يتم مرة واحدة فقط عند فتح تبويب الشقق
+    if (index == 1) {
+      loadOwnerApartments();
+    }
+
     notifyListeners();
   }
 

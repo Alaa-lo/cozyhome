@@ -16,15 +16,19 @@ class ApiEndpoints {
   static const String updateProfile = "/profile"; // POST (auth)تم
 
   // ---------------- Apartments ----------------
-  static const String apartments = "/apartments"; // GET////بدي اربطو
+  static const String apartments =
+      "/apartments"; // GET////تمللاونر لسل فلترة و رنتر
   static String apartmentDetails(int id) =>
-      "/apartments/$id"; // GET////بدي اربطو
+      "/apartments/$id"; // GET//بدي اربطو بس للرينتر حاليا
   static const String createApartment =
       "/apartments"; // POST (auth + role:owner)تم
   static String updateApartment(int id) =>
       "/apartments/$id"; // PUT (auth + role:owner)تم
   static String deleteApartment(int id) =>
       "/apartments/$id"; // DELETE (auth + role:owner)تم
+  // ---------------- Owner Apartments ----------------
+  static const String ownerApartments =
+      "/owner/apartments"; // GET (auth + role:owner)
 
   // ---------------- Bookings ----------------
   static const String bookings = "/bookings"; // POST (auth)

@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:cozy_home_1/core/models/apartment_model.dart';
 import 'package:cozy_home_1/features/owner/controllers/owner_home_controller.dart';
+import 'package:cozy_home_1/features/owner/screens/owner_apartment_details_screen.dart';
 import 'package:cozy_home_1/features/owner/service/owner_apartment_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,8 +30,13 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
 
     controller = Provider.of<OwnerHomeController>(context, listen: false);
 
+    // 🔥 initAnimations مباشرة (آمنة)
     controller.initAnimations(this);
-    controller.fetchApartments();
+
+    // 🔥 fetchApartments بعد اكتمال build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.fetchApartments();
+    });
 
     _currentPage = _homeContent();
   }
@@ -52,21 +61,28 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
           IconButton(
             icon: const Icon(Icons.add, color: Color(0xFFEBEADA)),
             onPressed: () async {
+              // 1. الانتقال لشاشة الإضافة وانتظار النتيجة
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const AddApartmentScreen()),
               );
 
+              // 2. التحقق من النتيجة
               if (result != null) {
-                final apartment = result["apartment"];
-                final images = result["images"];
+                // النتيجة القادمة من شاشة الإضافة
+                // نصرّح عنه كـ Apartment لمنع أي خطأ من نوع []
+                final Apartment apartmentModel = result["apartment"];
+                final List<File> images = result["images"];
 
                 try {
-                  // 🔥 استدعاء السيرفس الجديد الذي يرجع Apartment
+                  // 3. استدعاء السيرفس
                   final createdApt = await OwnerApartmentService()
-                      .createApartment(apartment: apartment, images: images);
+                      .createApartment(
+                        apartment: apartmentModel, // object وليس Map
+                        images: images,
+                      );
 
-                  // 🔥 إضافة الشقة للواجهة
+                  // 4. تحديث الواجهة عبر الكونترولر
                   controller.addApartment(createdApt);
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -75,6 +91,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                     ),
                   );
                 } catch (e) {
+                  print("Error in UI: $e");
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Failed to create apartment")),
                   );
@@ -141,7 +158,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
           );
         }
 
-        // 🔥 هون نفس ListView اللي كان عندك
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: controller.apartments.length,
@@ -155,87 +171,101 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                   offset: Offset(0, 20 * (1 - controller.curveAnimation.value)),
                   child: Opacity(
                     opacity: controller.curveAnimation.value,
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                OwnerApartmentDetailsScreen(apartment: apt),
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(20),
-                              topRight: Radius.circular(20),
+                        );
+                      },
+
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
-                            child: apt.images.isNotEmpty
-                                ? Image.network(
-                                    apt.images.first,
-                                    height: 180,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Container(
-                                    height: 180,
-                                    width: double.infinity,
-                                    color: Colors.grey[300],
-                                    child: const Icon(
-                                      Icons.home,
-                                      size: 60,
+                          ],
+                        ),
+
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                topRight: Radius.circular(20),
+                              ),
+                              child: apt.images.isNotEmpty
+                                  ? Image.network(
+                                      apt.images.first,
+                                      height: 180,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      height: 180,
+                                      width: double.infinity,
+                                      color: Colors.grey[300],
+                                      child: const Icon(
+                                        Icons.home,
+                                        size: 60,
+                                        color: Color(0xFF234E36),
+                                      ),
+                                    ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    apt.title,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF234E36),
+                                    ),
+                                  ), ////////////////////////////////
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "Province: ${apt.province}",
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "City: ${apt.city}",
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "Price: \$${apt.pricePerNight} / Night",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
                                       color: Color(0xFF234E36),
                                     ),
                                   ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  apt.title,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF234E36),
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  "Province: ${apt.province}",
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  "City: ${apt.city}",
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  "Price: \$${apt.pricePerNight} / Night",
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF234E36),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../controllers/owner_home_controller.dart';
-import 'package:cozy_home_1/features/renter/models/apartment.dart';
+import 'package:cozy_home_1/core/models/apartment_model.dart';
 
 class EditApartmentScreen extends StatefulWidget {
   final Apartment apartment;
@@ -19,6 +19,7 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
   late TextEditingController provinceController;
   late TextEditingController cityController;
   late TextEditingController priceController;
+  late TextEditingController descriptionController;
 
   List<String> images = [];
 
@@ -27,12 +28,13 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
     super.initState();
 
     titleController = TextEditingController(text: widget.apartment.title);
-    provinceController = TextEditingController(
-      text: widget.apartment.province,
-    );
+    provinceController = TextEditingController(text: widget.apartment.province);
     cityController = TextEditingController(text: widget.apartment.city);
     priceController = TextEditingController(
       text: widget.apartment.pricePerNight.toString(),
+    );
+    descriptionController = TextEditingController(
+      text: widget.apartment.description,
     );
 
     images = List.from(widget.apartment.images);
@@ -152,6 +154,7 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
             _field("Province", provinceController),
             _field("City", cityController),
             _field("Price", priceController, isNumber: true),
+            _field("Description", descriptionController),
 
             const SizedBox(height: 25),
 
@@ -160,11 +163,12 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
                 final updated = Apartment(
                   id: widget.apartment.id,
                   title: titleController.text,
-                  description: widget.apartment.description, // Keep original description
+                  description: descriptionController.text,
                   province: provinceController.text,
                   city: cityController.text,
                   pricePerNight: double.tryParse(priceController.text) ?? 0,
                   images: images,
+                  rentType: widget.apartment.rentType, // نحتفظ بالقيمة الأصلية
                 );
 
                 controller.updateApartment(updated);

@@ -1,6 +1,6 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_endpoints.dart';
-import '../models/apartment.dart';
+import 'package:cozy_home_1/core/models/apartment_model.dart';
 
 class ApartmentService {
   final ApiClient _apiClient = ApiClient();

@@ -1,10 +1,10 @@
+import 'package:cozy_home_1/core/models/apartment_model.dart';
 import 'package:flutter/material.dart';
-import 'package:cozy_home_1/features/renter/models/apartment.dart';
 import 'package:cozy_home_1/features/renter/service/apartment_service.dart';
 
 class RenterHomeController extends ChangeNotifier {
   final ApartmentService _apartmentService = ApartmentService();
-  
+
   // ============================
   // 🔹 Animation
   // ============================
@@ -96,12 +96,12 @@ class RenterHomeController extends ChangeNotifier {
     double maxPrice = filters["maxPrice"];
 
     filtered = apartments.where((apt) {
-      bool matchesProvince =
-          province == null || apt.province == province;
+      bool matchesProvince = province == null || apt.province == province;
 
       bool matchesCity = city == null || apt.city == city;
 
-      bool matchesPrice = apt.pricePerNight >= minPrice && apt.pricePerNight <= maxPrice;
+      bool matchesPrice =
+          apt.pricePerNight >= minPrice && apt.pricePerNight <= maxPrice;
 
       return matchesProvince && matchesCity && matchesPrice;
     }).toList();

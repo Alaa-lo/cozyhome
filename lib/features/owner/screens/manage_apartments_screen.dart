@@ -153,14 +153,13 @@ class ManageApartmentsScreen extends StatelessWidget {
                               ),
                             ),
 
-                            // زر Delete (بيج + أخضر)
+                            // زر Delete
                             OutlinedButton(
                               onPressed: () {
                                 if (apt.id != null) {
                                   controller.deleteApartment(apt.id!);
                                 }
                               },
-
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(
                                   color: Color(0xFF234E36),

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cozy_home_1/features/owner/service/owner_apartment_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cozy_home_1/features/owner/controllers/add_apartment_controller.dart';
@@ -13,6 +14,8 @@ class AddApartmentScreen extends StatefulWidget {
 class _AddApartmentScreenState extends State<AddApartmentScreen> {
   final _formKey = GlobalKey<FormState>();
   final ApartmentController controller = ApartmentController();
+  final OwnerApartmentService _service = OwnerApartmentService(); // السيرفس
+
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
@@ -20,24 +23,35 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
   String? _selectedGovernorate;
   String? _selectedCity;
   String _priceType = "Monthly";
+  bool _isLoading = false; // متغير حالة التحميل
 
   final List<XFile> _images = [];
 
   final Color mainGreen = const Color(0xFF234E36);
   final Color background = const Color(0xFFEBEADA);
 
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _addressController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
   Future<void> pickImages() async {
     final ImagePicker picker = ImagePicker();
-
     if (_images.length >= 4) return;
 
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      // --- أضف هذين السطرين لتقليل الحجم بشكل كبير ---
+      imageQuality: 35, // تقليل الجودة لـ 35% (كافية جداً للعرض)
+      maxWidth: 800, // تصغير عرض الصورة لـ 800 بكسل
+    );
 
     if (image != null) {
       setState(() {
-        if (_images.length < 4) {
-          _images.add(image);
-        }
+        _images.add(image);
       });
     }
   }
@@ -64,7 +78,6 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: background,
-
       appBar: AppBar(
         backgroundColor: mainGreen,
         title: const Text(
@@ -73,13 +86,10 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
         ),
         centerTitle: true,
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-
         child: Form(
           key: _formKey,
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -138,7 +148,7 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                 decoration: _inputDecoration("Price"),
                 style: TextStyle(color: mainGreen),
                 validator: (v) => v!.isEmpty ? "Enter price" : null,
-              ),
+              ), ////////////////////////////////////////////////////////
               const SizedBox(height: 20),
 
               // Price Type
@@ -159,7 +169,6 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                     onChanged: (v) => setState(() => _priceType = v!),
                   ),
                   Text("Monthly", style: TextStyle(color: mainGreen)),
-
                   Radio(
                     value: "Daily",
                     groupValue: _priceType,
@@ -209,7 +218,6 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                       return const SizedBox.shrink();
                     }
                   }
-
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.file(
@@ -233,35 +241,62 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // تعبئة الكونترولر بالبيانات
-                      controller.setTitle(_titleController.text);
-                      controller.setProvince(_selectedGovernorate!);
-                      controller.setCity(_selectedCity!);
-                      controller.setAddress(_addressController.text);
-                      controller.setPrice(_priceController.text);
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          // تعطيل الزر أثناء التحميل
+                          if (_formKey.currentState!.validate()) {
+                            setState(() => _isLoading = true); // بدء التحميل
 
-                      // إضافة الصور
-                      for (var img in _images) {
-                        controller.addImage(img);
-                      }
+                            try {
+                              controller.clearImages();
+                              controller.setTitle(_titleController.text);
+                              controller.setProvince(_selectedGovernorate!);
+                              controller.setCity(_selectedCity!);
+                              controller.setAddress(_addressController.text);
+                              controller.setPrice(_priceController.text);
+                              controller.setRentType(_priceType);
+                              for (var img in _images) {
+                                controller.addImage(File(img.path));
+                              }
 
-                      // بناء الموديل
-                      final apartment = controller.buildModel();
+                              // استدعاء السيرفس وانتظار النتيجة
+                              final newApartment = await _service
+                                  .createApartment(
+                                    apartment: controller.buildModel(),
+                                    images: controller.imageFiles,
+                                  );
 
-                      // رجوع الشقة للصفحة السابقة
-                      Navigator.pop(context, {
-                        "apartment": apartment,
-                        "images": controller.imageFiles,
-                      });
-                    }
-                  },
-
-                  child: const Text(
-                    "Save Apartment",
-                    style: TextStyle(fontSize: 18, color: Color(0xFFEBEADA)),
-                  ),
+                              if (mounted) {
+                                Navigator.pop(context, {
+                                  "apartment": newApartment,
+                                  "images": controller.imageFiles,
+                                });
+                                // نغلق الصفحة فقط بعد النجاح
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error: $e")),
+                                );
+                              }
+                            } finally {
+                              if (mounted)
+                                setState(
+                                  () => _isLoading = false,
+                                ); // إيقاف التحميل
+                            }
+                          }
+                        },
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          "Save Apartment",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Color(0xFFEBEADA),
+                          ),
+                        ),
                 ),
               ),
             ],
