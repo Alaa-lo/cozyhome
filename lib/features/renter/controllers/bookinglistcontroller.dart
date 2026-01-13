@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cozy_home_1/features/renter/models/booking.dart';
+import 'package:cozy_home_1/core/models/booking_model.dart';
 import 'package:cozy_home_1/features/renter/service/booking_service.dart';
 
 class BookingListController extends ChangeNotifier {

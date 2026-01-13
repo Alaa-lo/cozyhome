@@ -1,8 +1,8 @@
+import 'package:cozy_home_1/core/models/booking_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../controllers/rating_controller.dart';
-import 'package:cozy_home_1/features/renter/models/booking.dart';
 
 class RatingScreen extends StatelessWidget {
   final Booking booking;

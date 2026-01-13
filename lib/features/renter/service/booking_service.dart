@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_endpoints.dart';
-import '../models/booking.dart';
+import 'package:cozy_home_1/core/models/booking_model.dart';
 
 class BookingService {
   final ApiClient _apiClient = ApiClient();
@@ -43,7 +43,9 @@ class BookingService {
   // Cancel Booking
   Future<bool> cancelBooking(int bookingId) async {
     try {
-      final response = await _apiClient.patch(ApiEndpoints.cancelBooking(bookingId));
+      final response = await _apiClient.patch(
+        ApiEndpoints.cancelBooking(bookingId),
+      );
       return response.statusCode == 200;
     } catch (e) {
       return false;
@@ -51,14 +53,15 @@ class BookingService {
   }
 
   // Submit Review
-  Future<bool> submitReview(int bookingId, {required int rating, String? comment}) async {
+  Future<bool> submitReview(
+    int bookingId, {
+    required int rating,
+    String? comment,
+  }) async {
     try {
       final response = await _apiClient.post(
         ApiEndpoints.reviewBooking(bookingId),
-        data: {
-          "rating": rating,
-          "comment": comment,
-        },
+        data: {"rating": rating, "comment": comment},
       );
       return response.statusCode == 200;
     } catch (e) {

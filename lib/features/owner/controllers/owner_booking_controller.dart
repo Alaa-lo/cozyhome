@@ -1,29 +1,36 @@
+import 'package:cozy_home_1/core/models/booking_model.dart';
+import 'package:cozy_home_1/features/owner/service/owner_apartment_service.dart';
 import 'package:flutter/material.dart';
 
 class OwnerBookingController extends ChangeNotifier {
-  // قائمة طلبات الحجز
-  final List<Map<String, dynamic>> requests = [];
+  final OwnerApartmentService _service = OwnerApartmentService();
 
-  // إضافة طلب جديد
-  void addRequest(Map<String, dynamic> booking) {
-    requests.add(booking);
+  List<Booking> bookings = [];
+  bool isLoading = false;
+
+  Future<void> loadBookings() async {
+    isLoading = true;
+    notifyListeners();
+
+    bookings = await _service.getOwnerBookings();
+
+    isLoading = false;
     notifyListeners();
   }
 
-  // قبول الطلب
-  void acceptRequest(Map<String, dynamic> booking) {
-    booking["status"] = "accepted";
-    notifyListeners();
+  Future<void> approve(int id) async {
+    final success = await _service.approveBooking(id);
+    if (success) {
+      bookings.removeWhere((b) => b.id == id);
+      notifyListeners();
+    }
   }
 
-  // رفض الطلب
-  void rejectRequest(Map<String, dynamic> booking) {
-    booking["status"] = "rejected";
-    notifyListeners();
-  }
-
-  void deleteRequest(Map<String, dynamic> booking) {
-    requests.remove(booking);
-    notifyListeners();
+  Future<void> reject(int id) async {
+    final success = await _service.rejectBooking(id);
+    if (success) {
+      bookings.removeWhere((b) => b.id == id);
+      notifyListeners();
+    }
   }
 }

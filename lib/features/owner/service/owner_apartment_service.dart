@@ -1,3 +1,4 @@
+import 'package:cozy_home_1/core/models/booking_model.dart';
 import 'package:dio/dio.dart';
 import 'dart:io';
 import '../../../core/network/api_client.dart';
@@ -170,5 +171,30 @@ class OwnerApartmentService {
     } catch (e) {
       return false;
     }
+  }
+
+  //-------------------owner bookings--------------------------//
+  Future<List<Booking>> getOwnerBookings() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.ownerBookings);
+
+      if (response.statusCode == 200) {
+        final body = response.data;
+
+        if (body is List) {
+          return body.map((e) => Booking.fromJson(e)).toList();
+        }
+
+        if (body is Map<String, dynamic> && body["data"] is List) {
+          return (body["data"] as List)
+              .map((e) => Booking.fromJson(e))
+              .toList();
+        }
+      }
+    } catch (e) {
+      print("Error fetching owner bookings: $e");
+    }
+
+    return [];
   }
 }

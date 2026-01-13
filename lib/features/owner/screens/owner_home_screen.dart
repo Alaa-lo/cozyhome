@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cozy_home_1/core/models/apartment_model.dart';
+import 'package:cozy_home_1/features/owner/controllers/owner_booking_controller.dart';
 import 'package:cozy_home_1/features/owner/controllers/owner_home_controller.dart';
 import 'package:cozy_home_1/features/owner/screens/owner_apartment_details_screen.dart';
 import 'package:cozy_home_1/features/owner/service/owner_apartment_service.dart';
@@ -336,7 +337,11 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen>
                         } else if (index == 1) {
                           _currentPage = const ManageApartmentsScreen();
                         } else if (index == 2) {
-                          _currentPage = const BookingRequestsScreen();
+                          _currentPage = ChangeNotifierProvider(
+                            create: (_) =>
+                                OwnerBookingController()..loadBookings(),
+                            child: const BookingRequestsScreen(),
+                          );
                         } else if (index == 3) {
                           _currentPage = const OwnerProfileScreen();
                         }

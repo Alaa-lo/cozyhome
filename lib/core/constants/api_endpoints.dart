@@ -28,7 +28,7 @@ class ApiEndpoints {
       "/apartments/$id"; // DELETE (auth + role:owner)تم
   // ---------------- Owner Apartments ----------------
   static const String ownerApartments =
-      "/owner/apartments"; // GET (auth + role:owner)
+      "/owner/apartments"; // GET (auth + role:owner)تم
 
   // ---------------- Bookings ----------------
   static const String bookings = "/bookings"; // POST (auth)
@@ -40,11 +40,11 @@ class ApiEndpoints {
 
   // Owner actions
   static String approveBooking(int id) =>
-      "/owner/bookings/$id/approve"; // PATCH (auth + role:owner)
+      "/owner/bookings/$id/approve"; // PATCH (auth + role:owner)تم
   static String rejectBooking(int id) =>
-      "/owner/bookings/$id/reject"; // PATCH (auth + role:owner)
+      "/owner/bookings/$id/reject"; // PATCH (auth + role:owner)تم
   static const String ownerBookings =
-      "/owner/bookings"; // GET (auth + role:owner)
+      "/owner/bookings"; // GET (auth + role:owner)تم
 
   // ---------------- Favorites ----------------
   static const String favorites = "/favorites"; // GET (auth)

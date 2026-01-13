@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
 import 'package:cozy_home_1/features/renter/screens/editbookingsheet.dart';
 import 'package:cozy_home_1/features/renter/screens/rating_screen.dart';
-import 'package:cozy_home_1/features/renter/controllers/homepage_controller.dart'; // ⭐ مهم
-import 'package:cozy_home_1/features/renter/models/booking.dart';
+import 'package:cozy_home_1/features/renter/controllers/homepage_controller.dart';
+import 'package:cozy_home_1/core/models/booking_model.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
@@ -159,9 +159,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                   listen: false,
                 );
 
-                if (booking.id != null) {
-                  bookingController.cancelBooking(booking.id!);
-                }
+                bookingController.cancelBooking(booking.id);
               },
             ),
           ),
