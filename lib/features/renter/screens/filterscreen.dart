@@ -77,7 +77,6 @@ class _FilterScreenState extends State<FilterScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ✅ Section Title
                 const Padding(
                   padding: EdgeInsets.only(left: 4, bottom: 6),
                   child: Text(
@@ -195,9 +194,13 @@ class _FilterScreenState extends State<FilterScreen>
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
+
+                    // 🔥🔥 الربط هنا فقط
                     onPressed: () {
-                      Navigator.pop(context, controller.getFilters());
+                      final filters = controller.getFilters();
+                      Navigator.pop(context, filters);
                     },
+
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
@@ -224,7 +227,6 @@ class _FilterScreenState extends State<FilterScreen>
     );
   }
 
-  // ✅ DROPDOWN
   Widget _dropdown({
     required String? value,
     required String hint,
@@ -274,7 +276,6 @@ class _FilterScreenState extends State<FilterScreen>
     );
   }
 
-  // ✅ CARD
   Widget _buildCard({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -307,7 +308,6 @@ class _FilterScreenState extends State<FilterScreen>
     );
   }
 
-  // ✅ PRICE BOXES
   Widget _rangeValuesBox({
     required String label1,
     required String value1,

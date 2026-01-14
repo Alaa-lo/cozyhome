@@ -11,6 +11,7 @@ import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.da
 import 'package:cozy_home_1/features/renter/controllers/rating_controller.dart';
 import 'package:cozy_home_1/features/renter/controllers/homepage_controller.dart';
 import 'package:cozy_home_1/features/owner/controllers/owner_home_controller.dart';
+import 'package:cozy_home_1/features/renter/controllers/ApartmentDetailsController.dart';
 
 void main() {
   runApp(
@@ -24,6 +25,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => RenterHomeController()),
         ChangeNotifierProvider(create: (_) => OwnerHomeController()),
         ChangeNotifierProvider(create: (_) => PendingApprovalController()),
+        ChangeNotifierProvider(create: (_) => ApartmentDetailsController()),
       ],
       child: const MyApp(),
     ),

@@ -56,7 +56,6 @@ class BookingScreen extends StatelessWidget {
               ),
             ),
 
-            // ✅ رسالة الخطأ
             if (controller.dateErrorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -137,7 +136,6 @@ class BookingScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // ✅ زر إرسال الطلب
             SizedBox(
               width: double.infinity,
               child: AnimatedScale(
@@ -153,8 +151,8 @@ class BookingScreen extends StatelessWidget {
                   ),
                   onPressed: controller.isValid
                       ? () {
-                          final data = controller.getBookingData();
-                          Navigator.pop(context, data);
+                          final payload = controller.getApiPayload();
+                          Navigator.pop(context, payload);
                         }
                       : null,
                   child: Text(
@@ -173,7 +171,9 @@ class BookingScreen extends StatelessWidget {
     );
   }
 
-  // ✅ Widgets
+  // ============================
+  // Widgets
+  // ============================
 
   Widget _sectionTitle(String title) {
     return Text(

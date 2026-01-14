@@ -16,28 +16,52 @@ class RenterHomeController extends ChangeNotifier {
   // 🔹 Apartments List
   // ============================
   List<Apartment> apartments = [];
+  List<Apartment> filtered = [];
   bool isLoading = false;
 
+  // ============================
+  // 🔹 Fetch apartments (initial load)
+  // ============================
   Future<void> fetchApartments() async {
     isLoading = true;
     notifyListeners();
-    apartments = await _apartmentService.getApartments();
+
+    final result = await _apartmentService.getApartments();
+
+    // حماية من null
+    apartments = result;
     filtered = List.from(apartments);
+
     isLoading = false;
     notifyListeners();
   }
 
   // ============================
-  // 🔹 Filtered list
+  // 🔹 Apply filters (API-based)
   // ============================
-  List<Apartment> filtered = [];
+  Future<void> applyFilters(Map<String, dynamic> filters) async {
+    isLoading = true;
+    notifyListeners();
+
+    final result = await _apartmentService.getApartments(
+      city: filters["city"],
+      province: filters["province"],
+      minPrice: filters["minPrice"],
+      maxPrice: filters["maxPrice"],
+    );
+
+    // 🔥 أهم خطوة: استبدال القائمة بالكامل وليس تعديلها
+    filtered = (result).toList();
+
+    isLoading = false;
+    notifyListeners();
+  }
 
   // ============================
   // ⭐ Favorites list
   // ============================
   List<Apartment> favorites = [];
 
-  // ⭐ Toggle favorite
   void toggleFavorite(Apartment apt) {
     if (favorites.contains(apt)) {
       favorites.remove(apt);
@@ -47,7 +71,6 @@ class RenterHomeController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ⭐ Check if favorite
   bool isFavorite(Apartment apt) {
     return favorites.contains(apt);
   }
@@ -65,16 +88,15 @@ class RenterHomeController extends ChangeNotifier {
       parent: navController,
       curve: Curves.easeOut,
     );
-
-    filtered = List.from(apartments);
   }
 
   // ============================
   // 🔹 Dispose
   // ============================
+  @override
   void dispose() {
-    super.dispose();
     navController.dispose();
+    super.dispose();
   }
 
   // ============================
@@ -84,28 +106,5 @@ class RenterHomeController extends ChangeNotifier {
     selectedIndex = index;
     navController.forward(from: 0);
     updateUI();
-  }
-
-  // ============================
-  // 🔹 Apply filters
-  // ============================
-  void applyFilters(Map<String, dynamic> filters) {
-    String? province = filters["governorate"] ?? filters["province"];
-    String? city = filters["city"];
-    double minPrice = filters["minPrice"];
-    double maxPrice = filters["maxPrice"];
-
-    filtered = apartments.where((apt) {
-      bool matchesProvince = province == null || apt.province == province;
-
-      bool matchesCity = city == null || apt.city == city;
-
-      bool matchesPrice =
-          apt.pricePerNight >= minPrice && apt.pricePerNight <= maxPrice;
-
-      return matchesProvince && matchesCity && matchesPrice;
-    }).toList();
-
-    notifyListeners();
   }
 }

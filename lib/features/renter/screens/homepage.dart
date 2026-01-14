@@ -125,7 +125,7 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                   );
 
                   if (filters != null) {
-                    controller.applyFilters(filters);
+                    await controller.applyFilters(filters);
                     setState(() {});
                   }
                 },
@@ -147,7 +147,11 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
         ),
 
         Expanded(
-          child: controller.filtered.isEmpty
+          child: controller.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF234E36)),
+                )
+              : controller.filtered.isEmpty
               ? const Center(
                   child: Text(
                     "No apartments found",
@@ -162,6 +166,9 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                   padding: const EdgeInsets.all(16),
                   itemCount: controller.filtered.length,
                   itemBuilder: (context, index) {
+                    if (index >= controller.filtered.length) {
+                      return const SizedBox.shrink();
+                    }
                     final apt = controller.filtered[index];
 
                     return GestureDetector(
@@ -170,7 +177,7 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                           context,
                           MaterialPageRoute(
                             builder: (_) =>
-                                ApartmentDetailsScreen(apartment: apt),
+                                ApartmentDetailsScreen(apartmentId: apt.id!),
                           ),
                         );
                       },
@@ -207,23 +214,26 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                                       ),
                                       child: apt.images.isNotEmpty
                                           ? (apt.images.first.startsWith('http')
-                                              ? Image.network(
-                                                  apt.images.first,
-                                                  height: 180,
-                                                  width: double.infinity,
-                                                  fit: BoxFit.cover,
-                                                )
-                                              : Image.asset(
-                                                  apt.images.first,
-                                                  height: 180,
-                                                  width: double.infinity,
-                                                  fit: BoxFit.cover,
-                                                ))
+                                                ? Image.network(
+                                                    apt.images.first,
+                                                    height: 180,
+                                                    width: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : Image.asset(
+                                                    apt.images.first,
+                                                    height: 180,
+                                                    width: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                  ))
                                           : Container(
                                               height: 180,
                                               width: double.infinity,
                                               color: Colors.grey[300],
-                                              child: const Icon(Icons.home, size: 50),
+                                              child: const Icon(
+                                                Icons.home,
+                                                size: 50,
+                                              ),
                                             ),
                                     ),
 
@@ -341,7 +351,7 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                         } else if (index == 1) {
                           _currentPage = const MyBookingsScreen();
                         } else if (index == 2) {
-                          _currentPage = FavoritesScreen(); // ⭐ التعديل الوحيد
+                          _currentPage = FavoritesScreen();
                         } else if (index == 3) {
                           _currentPage = const ProfileScreen();
                         }

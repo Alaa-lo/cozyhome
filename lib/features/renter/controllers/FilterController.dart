@@ -59,10 +59,10 @@ class FilterController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ✅ Return filters
+  // ✅ Return filters (🔥 التعديل هنا فقط)
   Map<String, dynamic> getFilters() {
     return {
-      "governorate": selectedGovernorate,
+      "province": selectedGovernorate, // ← بدل governorate
       "city": selectedCity,
       "minPrice": minPrice,
       "maxPrice": maxPrice,

@@ -23,7 +23,8 @@ class FavoritesScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ApartmentDetailsScreen(apartment: apt),
+                        builder: (_) =>
+                            ApartmentDetailsScreen(apartmentId: apt.id!),
                       ),
                     );
                   },

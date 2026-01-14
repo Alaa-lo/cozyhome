@@ -11,13 +11,16 @@ class ApartmentService {
   // ================================
   Future<List<Apartment>> getApartments({
     String? city,
-    String? province,
-    double? maxPrice,
+    String? province, // governorate
+    double? minPrice, // NEW
+    double? maxPrice, // UPDATED
   }) async {
     final Map<String, dynamic> queryParams = {};
 
+    // 🔹 Filters
     if (city != null) queryParams['city'] = city;
     if (province != null) queryParams['province'] = province;
+    if (minPrice != null) queryParams['min_price'] = minPrice;
     if (maxPrice != null) queryParams['max_price'] = maxPrice;
 
     try {

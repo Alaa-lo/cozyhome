@@ -7,10 +7,8 @@ class BookingController extends ChangeNotifier {
   int guests = 1;
   String notes = "";
 
-  // ⭐ الشقة المختارة
   Apartment? selectedApartment;
 
-  // ⭐ تحديد الشقة
   void setApartment(Apartment apt) {
     selectedApartment = apt;
     notifyListeners();
@@ -50,13 +48,14 @@ class BookingController extends ChangeNotifier {
     return dateErrorMessage == null && selectedApartment != null;
   }
 
-  Map<String, dynamic> getBookingData() {
+  // ⭐ البيانات الجاهزة للإرسال للـ API
+  Map<String, dynamic> getApiPayload() {
     return {
-      "apartment": selectedApartment, // ⭐ أهم سطر
-      "checkIn": checkIn,
-      "checkOut": checkOut,
-      "guests": guests,
-      "notes": notes,
+      "apartment_id": selectedApartment!.id,
+      "start_date": checkIn!.toIso8601String().split("T").first,
+      "end_date": checkOut!.toIso8601String().split("T").first,
+      "number_of_persons": guests,
+      "notes": notes.isEmpty ? null : notes,
     };
   }
 

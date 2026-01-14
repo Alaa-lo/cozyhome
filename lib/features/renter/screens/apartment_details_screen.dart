@@ -1,16 +1,20 @@
-import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
+import 'package:cozy_home_1/features/renter/controllers/ApartmentDetailsController.dart';
+import 'package:cozy_home_1/features/renter/service/booking_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cozy_home_1/core/models/apartment_model.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:provider/provider.dart';
-import 'package:cozy_home_1/features/renter/controllers/bookingcontroller.dart';
-import 'package:cozy_home_1/features/renter/screens/bookingscreen.dart';
+
+import '../../../core/models/apartment_model.dart';
+import '../../renter/controllers/bookingcontroller.dart';
+import '../../renter/controllers/bookinglistcontroller.dart';
+import '../../renter/screens/bookingscreen.dart';
+
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class ApartmentDetailsScreen extends StatefulWidget {
-  final Apartment apartment;
+  final int apartmentId;
 
-  const ApartmentDetailsScreen({super.key, required this.apartment});
+  const ApartmentDetailsScreen({super.key, required this.apartmentId});
 
   @override
   State<ApartmentDetailsScreen> createState() => _ApartmentDetailsScreenState();
@@ -28,6 +32,15 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
   void initState() {
     super.initState();
 
+    // 🔥 حل مشكلة setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ApartmentDetailsController>(
+        context,
+        listen: false,
+      ).loadApartment(widget.apartmentId);
+    });
+
+    // الأنيميشن
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -54,283 +67,324 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final controller = Provider.of<ApartmentDetailsController>(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFEBEADA),
 
       appBar: AppBar(
         backgroundColor: const Color(0xFF234E36),
         title: Text(
-          widget.apartment.title,
+          controller.apartment?.title ?? "Apartment Details",
           style: const TextStyle(color: Color(0xFFEBEADA)),
         ),
       ),
 
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // صور الشقة
-                Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: SizedBox(
-                    height: 260,
-                    child: PageView(
-                      controller: _pageController,
-                      children: widget.apartment.images.map((img) {
-                        return ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(20),
-                            bottomRight: Radius.circular(20),
-                          ),
-                          child: img.startsWith('http')
-                              ? Image.network(
-                                  img,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                )
-                              : Image.asset(
-                                  img,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
+      body: controller.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          // 🔥 إذا في خطأ
+          : controller.errorMessage != null
+          ? Center(child: Text(controller.errorMessage!))
+          // 🔥 إذا البيانات null
+          : controller.apartment == null
+          ? const Center(
+              child: Text(
+                "No apartment data found",
+                style: TextStyle(fontSize: 18),
+              ),
+            )
+          // 🔥 البيانات جاهزة
+          : _buildDetails(controller.apartment!),
+    );
+  }
 
-                Center(
-                  child: SmoothPageIndicator(
+  Widget _buildDetails(Apartment apartment) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // صور الشقة
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  height: 260,
+                  child: PageView(
                     controller: _pageController,
-                    count: widget.apartment.images.length,
-                    effect: WormEffect(
-                      dotColor: Colors.grey,
-                      activeDotColor: const Color(0xFF234E36),
-                      dotHeight: 10,
-                      dotWidth: 10,
-                    ),
+                    children: apartment.images.map((img) {
+                      return ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
+                        ),
+                        child: img.startsWith('http')
+                            ? Image.network(
+                                img,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.asset(
+                                img,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                      );
+                    }).toList(),
                   ),
                 ),
+              ),
 
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.apartment.title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF234E36),
-                        ),
+              Center(
+                child: SmoothPageIndicator(
+                  controller: _pageController,
+                  count: apartment.images.length,
+                  effect: WormEffect(
+                    dotColor: Colors.grey,
+                    activeDotColor: const Color(0xFF234E36),
+                    dotHeight: 10,
+                    dotWidth: 10,
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      apartment.title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF234E36),
                       ),
+                    ),
 
-                      const SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            color: Color(0xFF234E36),
-                            size: 26,
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star,
+                          color: Color(0xFF234E36),
+                          size: 26,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          "4.5",
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF234E36),
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            "4.5",
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF234E36),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          "(120 reviews)",
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            _infoRow(Icons.map, apartment.province),
+                            const SizedBox(height: 15),
+                            _infoRow(Icons.location_on, apartment.city),
+                            const SizedBox(height: 15),
+                            _infoRow(
+                              Icons.attach_money,
+                              "\$${apartment.pricePerNight} / night",
+                              isPrice: true,
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            "(120 reviews)",
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.black54,
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    Text(
+                      "Features",
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF234E36),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        FeatureItem(icon: Icons.bed, label: "3 Beds"),
+                        FeatureItem(icon: Icons.bathtub, label: "2 Baths"),
+                        FeatureItem(icon: Icons.kitchen, label: "Kitchen"),
+                      ],
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    Text(
+                      "Description",
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF234E36),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    Text(
+                      apartment.description,
+                      style: GoogleFonts.poppins(fontSize: 16),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF234E36),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                            onPressed: () async {
+                              Provider.of<BookingController>(
+                                context,
+                                listen: false,
+                              ).setApartment(apartment);
 
-                      const SizedBox(height: 20),
-
-                      Card(
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              _infoRow(Icons.map, widget.apartment.province),
-                              const SizedBox(height: 15),
-                              _infoRow(
-                                Icons.location_on,
-                                widget.apartment.city,
-                              ),
-                              const SizedBox(height: 15),
-                              _infoRow(
-                                Icons.attach_money,
-                                "\$${widget.apartment.pricePerNight} / night",
-                                isPrice: true,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 25),
-
-                      Text(
-                        "Features",
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF234E36),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          FeatureItem(icon: Icons.bed, label: "3 Beds"),
-                          FeatureItem(icon: Icons.bathtub, label: "2 Baths"),
-                          FeatureItem(icon: Icons.kitchen, label: "Kitchen"),
-                        ],
-                      ),
-
-                      const SizedBox(height: 25),
-
-                      Text(
-                        "Description",
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF234E36),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      Text(
-                        "A beautiful apartment located in a quiet area with modern design and spacious rooms.",
-                        style: GoogleFonts.poppins(fontSize: 16),
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      // زر Book Now
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF234E36),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
+                              final payload = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const BookingScreen(),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
+                              );
 
-                              onPressed: () async {
-                                // ⭐ تمرير الشقة للكونترولر
-                                Provider.of<BookingController>(
-                                  context,
-                                  listen: false,
-                                ).setApartment(widget.apartment);
+                              if (payload == null) return;
 
-                                final bookingData = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const BookingScreen(),
-                                  ),
-                                );
+                              try {
+                                final response = await BookingService()
+                                    .createBooking(
+                                      apartmentId: payload["apartment_id"],
+                                      startDate: payload["start_date"],
+                                      endDate: payload["end_date"],
+                                      numberOfPersons:
+                                          payload["number_of_persons"],
+                                      notes: payload["notes"],
+                                    );
 
-                                if (bookingData != null) {
-                                  bookingData["apartment"] =
-                                      widget.apartment; // ⭐ التعديل الصحيح
-
+                                if (response.statusCode == 201 ||
+                                    response.statusCode == 200) {
                                   Provider.of<BookingListController>(
                                     context,
                                     listen: false,
-                                  ).addBooking(bookingData);
+                                  ).addBooking(payload);
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        "Booking added to Current Bookings",
+                                        "Booking request sent successfully!",
                                       ),
                                       backgroundColor: Color(0xFF234E36),
                                     ),
                                   );
+
+                                  Navigator.pop(context);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Failed to send booking request",
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
                                 }
-                              },
-
-                              child: Text(
-                                "Book Now",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  color: const Color(0xFFEBEADA),
-                                ),
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Error sending booking request",
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                            child: Text(
+                              "Book Now",
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                color: const Color(0xFFEBEADA),
                               ),
                             ),
                           ),
+                        ),
 
-                          const SizedBox(width: 12),
+                        const SizedBox(width: 12),
 
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: Color(0xFF234E36),
-                                  width: 2,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(
+                                color: Color(0xFF234E36),
+                                width: 2,
                               ),
-                              onPressed: () {},
-                              child: Text(
-                                "Contact Owner",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  color: Color(0xFF234E36),
-                                ),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {},
+                            child: Text(
+                              "Contact Owner",
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                color: Color(0xFF234E36),
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
 
-                      const SizedBox(height: 40),
-                    ],
-                  ),
+                    const SizedBox(height: 40),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
