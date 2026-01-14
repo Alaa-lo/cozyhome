@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cozy_home_1/features/renter/controllers/bookingcontroller.dart';
+import 'package:cozy_home_1/features/renter/service/booking_service.dart';
 
 class BookingScreen extends StatelessWidget {
   const BookingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<BookingController>(context);
+    final controller = Provider.of<BookingController>(context, listen: false);
 
     return Scaffold(
       backgroundColor: const Color(0xFFEBEADA),
@@ -39,7 +40,9 @@ class BookingScreen extends StatelessWidget {
                     value: controller.checkIn,
                     onTap: () async {
                       final date = await _pickDate(context);
-                      if (date != null) controller.setCheckIn(date);
+                      if (date != null) {
+                        controller.setCheckIn(date);
+                      }
                     },
                   ),
                   const SizedBox(height: 15),
@@ -49,7 +52,9 @@ class BookingScreen extends StatelessWidget {
                     value: controller.checkOut,
                     onTap: () async {
                       final date = await _pickDate(context);
-                      if (date != null) controller.setCheckOut(date);
+                      if (date != null) {
+                        controller.setCheckOut(date);
+                      }
                     },
                   ),
                 ],
@@ -78,12 +83,14 @@ class BookingScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "${controller.guests} Guest(s)",
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      color: const Color(0xFF234E36),
-                      fontWeight: FontWeight.w600,
+                  Consumer<BookingController>(
+                    builder: (_, c, __) => Text(
+                      "${c.guests} Guest(s)",
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        color: const Color(0xFF234E36),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   Row(
@@ -136,30 +143,76 @@ class BookingScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            SizedBox(
-              width: double.infinity,
-              child: AnimatedScale(
-                scale: controller.isValid ? 1 : 0.97,
-                duration: const Duration(milliseconds: 200),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF234E36),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+            Consumer<BookingController>(
+              builder: (_, c, __) => SizedBox(
+                width: double.infinity,
+                child: AnimatedScale(
+                  scale: c.isValid ? 1 : 0.97,
+                  duration: const Duration(milliseconds: 200),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF234E36),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  onPressed: controller.isValid
-                      ? () {
-                          final payload = controller.getApiPayload();
-                          Navigator.pop(context, payload);
-                        }
-                      : null,
-                  child: Text(
-                    "Send Booking Request",
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      color: const Color(0xFFEBEADA),
+
+                    onPressed: c.isValid
+                        ? () async {
+                            final payload = c.getApiPayload();
+                            final service = BookingService();
+
+                            try {
+                              final response = await service.createBooking(
+                                apartmentId: payload["apartment_id"],
+                                startDate: payload["start_date"],
+                                endDate: payload["end_date"],
+                                numberOfPersons: payload["number_of_persons"],
+                                notes: payload["notes"],
+                              );
+                              print(
+                                "APARTMENT ID = ${payload["apartment_id"]}",
+                              );
+
+                              if (response.statusCode == 200) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Booking request sent successfully!",
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+
+                                Navigator.pop(context, true);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Failed to send booking request",
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Error: $e"),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        : null,
+
+                    child: Text(
+                      "Send Booking Request",
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        color: const Color(0xFFEBEADA),
+                      ),
                     ),
                   ),
                 ),

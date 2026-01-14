@@ -43,7 +43,8 @@ class ApiEndpoints {
   static String toggleFavorite(int id) => "/favorites/toggle/$id";
 
   // ---------------- Admin ----------------
-  static const String adminLogin = "/admin/login-as-default";
+  // داخل كلاس ApiEndpoints
+  static const String adminLogin = "/login";
   static const String pendingUsers = "/admin/pending-users";
   static String approveUser(int id) => "/admin/users/$id/approve";
   static String rejectUser(int id) => "/admin/users/$id/reject";

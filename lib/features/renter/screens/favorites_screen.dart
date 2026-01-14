@@ -50,19 +50,14 @@ class FavoritesScreen extends StatelessWidget {
                             topRight: Radius.circular(20),
                           ),
                           child: apt.images.isNotEmpty
-                              ? (apt.images.first.startsWith('http')
-                                    ? Image.network(
-                                        apt.images.first,
-                                        height: 180,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Image.asset(
-                                        apt.images.first,
-                                        height: 180,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                      ))
+                              ? Image.network(
+                                  apt.images.first.startsWith("http")
+                                      ? apt.images.first
+                                      : "https://nancy-nondisputatious-interlocally.ngrok-free.dev/storage/${apt.images.first}",
+                                  height: 180,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                )
                               : Container(
                                   height: 180,
                                   width: double.infinity,

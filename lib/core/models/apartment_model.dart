@@ -26,6 +26,23 @@ class Apartment {
   });
 
   factory Apartment.fromJson(Map<String, dynamic> json) {
+    const String baseUrl =
+        "https://nancy-nondisputatious-interlocally.ngrok-free.dev/storage/";
+
+    // معالجة الصور
+    List<String> parsedImages = [];
+    if (json['images'] != null) {
+      parsedImages = List<String>.from(
+        json['images'].map((img) {
+          // إذا الصورة رابط كامل → استخدمه كما هو
+          if (img.toString().startsWith("http")) return img;
+
+          // إذا الصورة مسار فقط → أضف base URL
+          return "$baseUrl$img";
+        }),
+      );
+    }
+
     return Apartment(
       id: json['id'],
       title: json['apartment_name'] ?? json['title'] ?? '',
@@ -39,7 +56,7 @@ class Apartment {
           ? double.tryParse(json['price_per_night'].toString()) ?? 0.0
           : 0.0,
       rentType: json['rent_type'] ?? 'Monthly',
-      images: json['images'] != null ? List<String>.from(json['images']) : [],
+      images: parsedImages,
       ownerId: json['owner_id'],
       isFavorite: json['is_favorite'] ?? false,
     );

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_endpoints.dart';
 import 'package:cozy_home_1/core/models/booking_model.dart';
@@ -26,17 +27,37 @@ class BookingService {
     );
   }
 
-  // Get My Bookings
   Future<List<Booking>> getMyBookings() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.myBookings);
+
       if (response.statusCode == 200) {
-        final List data = response.data;
-        return data.map((json) => Booking.fromJson(json)).toList();
+        final data = response.data;
+
+        final List<Booking> all = [];
+
+        if (data['current'] != null) {
+          all.addAll((data['current'] as List).map((e) => Booking.fromJson(e)));
+        }
+
+        if (data['previous'] != null) {
+          all.addAll(
+            (data['previous'] as List).map((e) => Booking.fromJson(e)),
+          );
+        }
+
+        if (data['canceled'] != null) {
+          all.addAll(
+            (data['canceled'] as List).map((e) => Booking.fromJson(e)),
+          );
+        }
+
+        return all;
       }
     } catch (e) {
-      // Handle error
+      debugPrint("Error in getMyBookings: $e");
     }
+
     return [];
   }
 

@@ -1,12 +1,11 @@
 import 'package:cozy_home_1/features/renter/controllers/ApartmentDetailsController.dart';
-import 'package:cozy_home_1/features/renter/service/booking_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/apartment_model.dart';
 import '../../renter/controllers/bookingcontroller.dart';
-import '../../renter/controllers/bookinglistcontroller.dart';
+
 import '../../renter/screens/bookingscreen.dart';
 
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -32,7 +31,6 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
   void initState() {
     super.initState();
 
-    // 🔥 حل مشكلة setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ApartmentDetailsController>(
         context,
@@ -40,7 +38,6 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
       ).loadApartment(widget.apartmentId);
     });
 
-    // الأنيميشن
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -67,7 +64,10 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<ApartmentDetailsController>(context);
+    final controller = Provider.of<ApartmentDetailsController>(
+      context,
+      listen: false,
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFEBEADA),
@@ -82,10 +82,8 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
 
       body: controller.isLoading
           ? const Center(child: CircularProgressIndicator())
-          // 🔥 إذا في خطأ
           : controller.errorMessage != null
           ? Center(child: Text(controller.errorMessage!))
-          // 🔥 إذا البيانات null
           : controller.apartment == null
           ? const Center(
               child: Text(
@@ -93,12 +91,14 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                 style: TextStyle(fontSize: 18),
               ),
             )
-          // 🔥 البيانات جاهزة
           : _buildDetails(controller.apartment!),
     );
   }
 
   Widget _buildDetails(Apartment apartment) {
+    final List<String> images = apartment.images;
+    final bool hasImages = images.isNotEmpty;
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -122,42 +122,57 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                 ),
                 child: SizedBox(
                   height: 260,
-                  child: PageView(
-                    controller: _pageController,
-                    children: apartment.images.map((img) {
-                      return ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(20),
-                          bottomRight: Radius.circular(20),
-                        ),
-                        child: img.startsWith('http')
-                            ? Image.network(
-                                img,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.asset(
-                                img,
+                  child: hasImages
+                      ? PageView(
+                          controller: _pageController,
+                          children: images.map((img) {
+                            return ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(20),
+                                bottomRight: Radius.circular(20),
+                              ),
+                              child: Image.network(
+                                img.startsWith('http')
+                                    ? img
+                                    : "https://nancy-nondisputatious-interlocally.ngrok-free.dev/storage/$img",
                                 width: double.infinity,
                                 fit: BoxFit.cover,
                               ),
-                      );
-                    }).toList(),
-                  ),
+                            );
+                          }).toList(),
+                        )
+                      : ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(20),
+                          ),
+                          child: Container(
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: Icon(
+                                Icons.home,
+                                size: 60,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ),
+                        ),
                 ),
               ),
 
               Center(
-                child: SmoothPageIndicator(
-                  controller: _pageController,
-                  count: apartment.images.length,
-                  effect: WormEffect(
-                    dotColor: Colors.grey,
-                    activeDotColor: const Color(0xFF234E36),
-                    dotHeight: 10,
-                    dotWidth: 10,
-                  ),
-                ),
+                child: hasImages
+                    ? SmoothPageIndicator(
+                        controller: _pageController,
+                        count: images.length,
+                        effect: WormEffect(
+                          dotColor: Colors.grey,
+                          activeDotColor: const Color(0xFF234E36),
+                          dotHeight: 10,
+                          dotWidth: 10,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
 
               Padding(
@@ -279,70 +294,20 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen>
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            onPressed: () async {
+                            onPressed: () {
                               Provider.of<BookingController>(
                                 context,
                                 listen: false,
                               ).setApartment(apartment);
 
-                              final payload = await Navigator.push(
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => const BookingScreen(),
                                 ),
                               );
-
-                              if (payload == null) return;
-
-                              try {
-                                final response = await BookingService()
-                                    .createBooking(
-                                      apartmentId: payload["apartment_id"],
-                                      startDate: payload["start_date"],
-                                      endDate: payload["end_date"],
-                                      numberOfPersons:
-                                          payload["number_of_persons"],
-                                      notes: payload["notes"],
-                                    );
-
-                                if (response.statusCode == 201 ||
-                                    response.statusCode == 200) {
-                                  Provider.of<BookingListController>(
-                                    context,
-                                    listen: false,
-                                  ).addBooking(payload);
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "Booking request sent successfully!",
-                                      ),
-                                      backgroundColor: Color(0xFF234E36),
-                                    ),
-                                  );
-
-                                  Navigator.pop(context);
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "Failed to send booking request",
-                                      ),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Error sending booking request",
-                                    ),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
                             },
+
                             child: Text(
                               "Book Now",
                               style: GoogleFonts.poppins(

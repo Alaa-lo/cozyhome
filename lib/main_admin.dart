@@ -13,9 +13,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // شاشة البداية
+
       home: const AdminLoginScreen(),
-      // تعريف الـ routes
+
       routes: {
         '/admin_login': (context) => const AdminLoginScreen(),
         '/admin_dashboard': (context) => const AdminDashboard(),
