@@ -26,8 +26,7 @@ class Apartment {
   });
 
   factory Apartment.fromJson(Map<String, dynamic> json) {
-    const String baseUrl =
-        "https://nancy-nondisputatious-interlocally.ngrok-free.dev/storage/";
+    final String baseUrl = ApiEndpoints.storageBaseUrl;
 
     // معالجة الصور
     List<String> parsedImages = [];

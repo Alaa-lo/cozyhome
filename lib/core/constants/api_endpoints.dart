@@ -7,6 +7,10 @@ class ApiEndpoints {
     "Accept": "application/json",
   };
 
+  static String get storageBaseUrl {
+    return baseUrl.replaceAll('/api', '/storage/');
+  }
+
   // ---------------- Auth ----------------
   static const String register = "/register"; //
   static const String login = "/login"; //

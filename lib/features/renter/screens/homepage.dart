@@ -219,6 +219,18 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                                                     height: 180,
                                                     width: double.infinity,
                                                     fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) {
+                                                      return Container(
+                                                        height: 180,
+                                                        width: double.infinity,
+                                                        color: Colors.grey[300],
+                                                        child: const Icon(
+                                                          Icons.broken_image,
+                                                          size: 50,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      );
+                                                    },
                                                   )
                                                 : Image.asset(
                                                     apt.images.first,

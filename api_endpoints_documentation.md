@@ -157,7 +157,7 @@ This document lists all the API endpoints available in the Cozy Home project.
 
 ---
 
-### Review Endpoints
+###3 Review Endpoints
 
 ### 20. Submit Review
 - **URL**: `/api/bookings/{booking}/review`

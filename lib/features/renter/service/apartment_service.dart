@@ -62,7 +62,11 @@ class ApartmentService {
       final response = await _apiClient.get(ApiEndpoints.apartmentDetails(id));
 
       if (response.statusCode == 200) {
-        return Apartment.fromJson(response.data);
+        var data = response.data;
+        if (data is Map && data.containsKey('data')) {
+          data = data['data'];
+        }
+        return Apartment.fromJson(data);
       }
     } catch (e, s) {
       debugPrint("❌ Error in getApartmentDetails: $e");
