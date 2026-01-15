@@ -8,8 +8,9 @@ class FavoritesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Provider.of<RenterHomeController>(context);
 
-    return Container(
+    return Material(
       color: const Color(0xFFEBEADA),
+
       child: controller.favorites.isEmpty
           ? _emptyState()
           : ListView.builder(

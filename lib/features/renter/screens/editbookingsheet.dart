@@ -56,6 +56,7 @@ class _EditBookingSheetState extends State<EditBookingSheet> {
 
           const SizedBox(height: 25),
 
+          // ---------------- CHECK-IN ----------------
           _datePickerTile(
             title: "Check-in Date",
             date: checkIn,
@@ -66,24 +67,39 @@ class _EditBookingSheetState extends State<EditBookingSheet> {
                 firstDate: DateTime.now().subtract(const Duration(days: 365)),
                 lastDate: DateTime.now().add(const Duration(days: 365)),
               );
+
               if (picked != null) {
-                setState(() => checkIn = picked);
+                setState(() {
+                  checkIn = picked;
+
+                  // إذا أصبح checkOut قبل checkIn، عدّله تلقائيًا
+                  if (checkOut.isBefore(checkIn)) {
+                    checkOut = checkIn.add(const Duration(days: 1));
+                  }
+                });
               }
             },
           ),
 
           const SizedBox(height: 15),
 
+          // ---------------- CHECK-OUT ----------------
           _datePickerTile(
             title: "Check-out Date",
             date: checkOut,
             onTap: () async {
+              // إصلاح الكراش: تأكد أن initialDate >= firstDate
+              DateTime safeInitial = checkOut.isBefore(checkIn)
+                  ? checkIn
+                  : checkOut;
+
               final picked = await showDatePicker(
                 context: context,
-                initialDate: checkOut,
+                initialDate: safeInitial,
                 firstDate: checkIn,
                 lastDate: DateTime.now().add(const Duration(days: 365)),
               );
+
               if (picked != null) {
                 setState(() => checkOut = picked);
               }
@@ -92,6 +108,7 @@ class _EditBookingSheetState extends State<EditBookingSheet> {
 
           const SizedBox(height: 30),
 
+          // ---------------- SAVE BUTTON ----------------
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF234E36),
@@ -110,6 +127,8 @@ class _EditBookingSheetState extends State<EditBookingSheet> {
                   endDate: checkOut.toIso8601String(),
                 );
 
+                if (!mounted) return;
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text("Booking updated successfully!"),
@@ -119,6 +138,8 @@ class _EditBookingSheetState extends State<EditBookingSheet> {
 
                 Navigator.pop(context, updatedBooking);
               } catch (e) {
+                if (!mounted) return;
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(e.toString()),
@@ -143,6 +164,7 @@ class _EditBookingSheetState extends State<EditBookingSheet> {
     );
   }
 
+  // ---------------- DATE TILE ----------------
   Widget _datePickerTile({
     required String title,
     required DateTime date,

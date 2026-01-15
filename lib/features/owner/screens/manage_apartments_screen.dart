@@ -1,4 +1,4 @@
-import 'dart:io';
+//import 'dart:io';
 import 'package:cozy_home_1/features/owner/screens/edit_apartment_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -53,43 +53,34 @@ class ManageApartmentsScreen extends StatelessWidget {
                           topRight: Radius.circular(18),
                         ),
                         child: apt.images.isNotEmpty
-                            ? (apt.images.first.startsWith('http')
-                                ? Image.network(
-                                    apt.images.first,
-                                    height: 180,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        height: 180,
-                                        width: double.infinity,
-                                        color: Colors.grey[300],
-                                        child: const Icon(
-                                          Icons.broken_image,
-                                          size: 50,
-                                          color: Colors.grey,
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : Image.file(
-                                    File(apt.images.first),
-                                    height: 180,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                       return Container(
-                                        height: 180,
-                                        width: double.infinity,
-                                        color: Colors.grey[300],
-                                        child: const Icon(
-                                          Icons.broken_image,
-                                          size: 50,
-                                          color: Colors.grey,
-                                        ),
-                                      );
-                                    },
-                                  ))
+                            ? (() {
+                                String img = apt.images.first;
+
+                                // 🔥 إصلاح المسار الناقص
+                                if (!img.startsWith('http')) {
+                                  img =
+                                      "http://nancy-nondisputatious-interlocally.ngrok-free.dev/$img";
+                                }
+
+                                return Image.network(
+                                  img,
+                                  height: 180,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      height: 180,
+                                      width: double.infinity,
+                                      color: Colors.grey[300],
+                                      child: const Icon(
+                                        Icons.broken_image,
+                                        size: 50,
+                                        color: Colors.grey,
+                                      ),
+                                    );
+                                  },
+                                );
+                              })()
                             : Container(
                                 height: 180,
                                 width: double.infinity,

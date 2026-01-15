@@ -4,10 +4,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../controllers/rating_controller.dart';
 
-class RatingScreen extends StatelessWidget {
+class RatingScreen extends StatefulWidget {
   final Booking booking;
 
   const RatingScreen({super.key, required this.booking});
+
+  @override
+  State<RatingScreen> createState() => _RatingScreenState();
+}
+
+class _RatingScreenState extends State<RatingScreen> {
+  final TextEditingController commentController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +66,24 @@ class RatingScreen extends StatelessWidget {
               }),
             ),
 
+            const SizedBox(height: 30),
+
+            // 📝 خانة التعليق
+            TextField(
+              controller: commentController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: "Write a comment (optional)",
+                hintStyle: GoogleFonts.poppins(color: Colors.black54),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.all(16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 40),
 
             // زر الإرسال
@@ -73,7 +98,10 @@ class RatingScreen extends StatelessWidget {
                   ),
                 ),
                 onPressed: () async {
-                  final success = await controller.submitRating(booking);
+                  final success = await controller.submitRating(
+                    widget.booking,
+                    comment: commentController.text.trim(),
+                  );
 
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(

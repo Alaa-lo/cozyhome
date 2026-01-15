@@ -40,7 +40,7 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
 
     addressController = TextEditingController(
       text: widget.apartment.address ?? "",
-    ); // ⭐ جديد
+    );
 
     images = List.from(widget.apartment.images);
   }
@@ -89,18 +89,34 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
                 scrollDirection: Axis.horizontal,
                 children: [
                   ...images.map((img) {
+                    bool isNetwork = img.startsWith("http");
+
+                    // إصلاح المسار الناقص
+                    if (!isNetwork && !img.startsWith("/")) {
+                      img =
+                          "http://nancy-nondisputatious-interlocally.ngrok-free.dev/$img";
+                      isNetwork = true;
+                    }
+
                     return Stack(
                       children: [
                         Container(
                           margin: const EdgeInsets.only(right: 10),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              File(img),
-                              width: 150,
-                              height: 150,
-                              fit: BoxFit.cover,
-                            ),
+                            child: isNetwork
+                                ? Image.network(
+                                    img,
+                                    width: 150,
+                                    height: 150,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.file(
+                                    File(img),
+                                    width: 150,
+                                    height: 150,
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
                         ),
 
@@ -158,10 +174,7 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
             _field("Title", titleController),
             _field("Province", provinceController),
             _field("City", cityController),
-
-            // ⭐ الحقل الجديد
             _field("Detailed Address", addressController),
-
             _field("Price", priceController, isNumber: true),
             _field("Description", descriptionController),
 
@@ -175,7 +188,7 @@ class _EditApartmentScreenState extends State<EditApartmentScreen> {
                   description: descriptionController.text,
                   province: provinceController.text,
                   city: cityController.text,
-                  address: addressController.text, // ⭐ مهم جداً
+                  address: addressController.text,
                   pricePerNight: double.tryParse(priceController.text) ?? 0,
                   images: images,
                   rentType: widget.apartment.rentType,

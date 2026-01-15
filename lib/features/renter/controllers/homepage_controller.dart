@@ -28,7 +28,6 @@ class RenterHomeController extends ChangeNotifier {
 
     final result = await _apartmentService.getApartments();
 
-    // حماية من null
     apartments = result;
     filtered = List.from(apartments);
 
@@ -50,8 +49,7 @@ class RenterHomeController extends ChangeNotifier {
       maxPrice: filters["maxPrice"],
     );
 
-    // 🔥 أهم خطوة: استبدال القائمة بالكامل وليس تعديلها
-    filtered = (result).toList();
+    filtered = result.toList();
 
     isLoading = false;
     notifyListeners();

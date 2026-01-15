@@ -15,16 +15,27 @@ class BookingListController extends ChangeNotifier {
     notifyListeners();
 
     final allBookings = await _bookingService.getMyBookings();
+    final today = DateTime.now();
 
-    currentBookings = allBookings
-        .where((b) => b.status == 'approved' || b.status == 'pending')
-        .toList();
-    previousBookings = allBookings
-        .where((b) => b.status == 'completed')
-        .toList();
+    // 🔹 Cancelled
     cancelledBookings = allBookings
         .where((b) => b.status == 'cancelled' || b.status == 'rejected')
         .toList();
+
+    // 🔹 Previous (انتهى)
+    previousBookings = allBookings.where((b) {
+      return b.endDate.isBefore(today) &&
+          b.status != 'cancelled' &&
+          b.status != 'rejected';
+    }).toList();
+
+    // 🔹 Current (ضمن المدة)
+    currentBookings = allBookings.where((b) {
+      return b.startDate.isBefore(today) &&
+          b.endDate.isAfter(today) &&
+          b.status != 'cancelled' &&
+          b.status != 'rejected';
+    }).toList();
 
     isLoading = false;
     notifyListeners();
@@ -37,9 +48,8 @@ class BookingListController extends ChangeNotifier {
     }
   }
 
-  // في BookingListController
   Future<void> addBooking({
-    required int apartmentId, // مرر الرقم مباشرة
+    required int apartmentId,
     required DateTime startDate,
     required DateTime endDate,
     required int guests,
@@ -57,10 +67,10 @@ class BookingListController extends ChangeNotifier {
         notes: notes,
       );
 
-      await fetchBookings(); // تحديث القائمة بعد النجاح
+      await fetchBookings();
     } catch (e) {
       debugPrint("❌ Create Booking Error: $e");
-      rethrow; // مهم جداً لكي يشعر الـ UI بالخطأ
+      rethrow;
     } finally {
       isLoading = false;
       notifyListeners();
@@ -68,8 +78,6 @@ class BookingListController extends ChangeNotifier {
   }
 
   Future<void> moveToPrevious(Booking booking) async {
-    // In a real API, this might be handled by the server when a booking's dates pass.
-    // For now, we can just refresh.
     await fetchBookings();
   }
 
@@ -77,8 +85,6 @@ class BookingListController extends ChangeNotifier {
     Booking oldBooking,
     Map<String, dynamic> newData,
   ) async {
-    // Implement update via service if available in backend
-    // For now, we refresh to get latest state from server
     await fetchBookings();
   }
 }

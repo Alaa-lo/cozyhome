@@ -18,7 +18,6 @@ class RenterHomeScreen extends StatefulWidget {
 class _RenterHomeScreenState extends State<RenterHomeScreen>
     with SingleTickerProviderStateMixin {
   late RenterHomeController controller;
-  late Widget _currentPage;
 
   @override
   void initState() {
@@ -26,8 +25,6 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
     controller = RenterHomeController();
     controller.initAnimations(this);
     controller.fetchApartments(); // Fetch real data
-
-    _currentPage = _homeContent();
   }
 
   @override
@@ -73,14 +70,18 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
           ],
         ),
 
-        body: Column(children: [Expanded(child: _currentPage)]),
+        body: Consumer<RenterHomeController>(
+          builder: (context, controller, _) {
+            return _homeContent(controller);
+          },
+        ),
 
         bottomNavigationBar: _buildConvexNavBar(),
       ),
     );
   }
 
-  Widget _homeContent() {
+  Widget _homeContent(RenterHomeController controller) {
     return Column(
       children: [
         Padding(
@@ -126,7 +127,6 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
 
                   if (filters != null) {
                     await controller.applyFilters(filters);
-                    setState(() {});
                   }
                 },
                 child: Container(
@@ -166,9 +166,6 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                   padding: const EdgeInsets.all(16),
                   itemCount: controller.filtered.length,
                   itemBuilder: (context, index) {
-                    if (index >= controller.filtered.length) {
-                      return const SizedBox.shrink();
-                    }
                     final apt = controller.filtered[index];
 
                     return GestureDetector(
@@ -219,18 +216,27 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                                                     height: 180,
                                                     width: double.infinity,
                                                     fit: BoxFit.cover,
-                                                    errorBuilder: (context, error, stackTrace) {
-                                                      return Container(
-                                                        height: 180,
-                                                        width: double.infinity,
-                                                        color: Colors.grey[300],
-                                                        child: const Icon(
-                                                          Icons.broken_image,
-                                                          size: 50,
-                                                          color: Colors.grey,
-                                                        ),
-                                                      );
-                                                    },
+                                                    errorBuilder:
+                                                        (
+                                                          context,
+                                                          error,
+                                                          stackTrace,
+                                                        ) {
+                                                          return Container(
+                                                            height: 180,
+                                                            width:
+                                                                double.infinity,
+                                                            color: Colors
+                                                                .grey[300],
+                                                            child: const Icon(
+                                                              Icons
+                                                                  .broken_image,
+                                                              size: 50,
+                                                              color:
+                                                                  Colors.grey,
+                                                            ),
+                                                          );
+                                                        },
                                                   )
                                                 : Image.asset(
                                                     apt.images.first,
@@ -357,17 +363,28 @@ class _RenterHomeScreenState extends State<RenterHomeScreen>
                 return GestureDetector(
                   onTap: () {
                     controller.onNavTapped(index, () {
-                      setState(() {
-                        if (index == 0) {
-                          _currentPage = _homeContent();
-                        } else if (index == 1) {
-                          _currentPage = const MyBookingsScreen();
-                        } else if (index == 2) {
-                          _currentPage = FavoritesScreen();
-                        } else if (index == 3) {
-                          _currentPage = const ProfileScreen();
-                        }
-                      });
+                      if (index == 0) {
+                        // Already handled by Consumer
+                      } else if (index == 1) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyBookingsScreen(),
+                          ),
+                        );
+                      } else if (index == 2) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => FavoritesScreen()),
+                        );
+                      } else if (index == 3) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ProfileScreen(),
+                          ),
+                        );
+                      }
                     });
                   },
                   child: AnimatedContainer(
