@@ -13,7 +13,7 @@ class Booking {
   final int numberOfPersons;
   final String? notes;
 
-  final Apartment? apartment; // موجود فقط عند renter
+  final Apartment? apartment;
 
   Booking({
     required this.id,
@@ -30,23 +30,40 @@ class Booking {
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
-      id: json['id'],
-      renterId: json['renter_id'] ?? 0,
-      apartmentId: json['apartment_id'] ?? 0,
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+
+      renterId: int.tryParse(json['renter_id'].toString()) ?? 0,
+
+      apartmentId: int.tryParse(json['apartment_id'].toString()) ?? 0,
 
       startDate: DateTime.parse(json['start_date']),
       endDate: DateTime.parse(json['end_date']),
 
-      // 🔥 التعديل المهم هنا
       totalPrice: double.tryParse(json['total_price'].toString()) ?? 0.0,
 
       status: json['status'] ?? 'pending',
-      numberOfPersons: json['number_of_persons'] ?? 1,
+
+      numberOfPersons: int.tryParse(json['number_of_persons'].toString()) ?? 1,
+
       notes: json['notes'],
 
       apartment: json['apartment'] != null
           ? Apartment.fromJson(json['apartment'])
           : null,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'renter_id': renterId,
+      'apartment_id': apartmentId,
+      'start_date': startDate.toIso8601String(),
+      'end_date': endDate.toIso8601String(),
+      'total_price': totalPrice,
+      'status': status,
+      'number_of_persons': numberOfPersons,
+      'notes': notes,
+    };
   }
 }

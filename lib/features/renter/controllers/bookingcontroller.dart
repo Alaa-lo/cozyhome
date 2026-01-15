@@ -7,10 +7,8 @@ class BookingController extends ChangeNotifier {
   int guests = 1;
   String notes = "";
 
-  // جعلناه قابل ليكون null في البداية
   Apartment? selectedApartment;
 
-  // دالة لتحديد الشقة المختارة
   void setApartment(Apartment apt) {
     selectedApartment = apt;
     notifyListeners();
@@ -36,7 +34,6 @@ class BookingController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // رسائل الخطأ الخاصة بالتاريخ
   String? get dateErrorMessage {
     if (checkIn == null || checkOut == null) {
       return "Please select both check-in and check-out dates";
@@ -47,7 +44,6 @@ class BookingController extends ChangeNotifier {
     return null;
   }
 
-  // التعديل الجوهري: الزر لن يكون فعالاً إلا إذا تم اختيار الشقة والتاريخ معاً
   bool get isValid {
     bool datesValid =
         checkIn != null && checkOut != null && dateErrorMessage == null;
@@ -56,19 +52,17 @@ class BookingController extends ChangeNotifier {
     return datesValid && apartmentSelected;
   }
 
-  // ⭐ تحويل البيانات بشكل آمن للـ API
+  // ⭐ تحويل البيانات للـ API
   Map<String, dynamic> getApiPayload() {
-    // نستخدم ?. لضمان عدم حدوث Crash إذا كانت البيانات فارغة لسبب ما
     return {
-      "apartment_id": selectedApartment?.id, // سيأخذ الـ ID الخاص بالشقة
-      "start_date": checkIn?.toIso8601String().split("T").first,
-      "end_date": checkOut?.toIso8601String().split("T").first,
+      "apartment_id": selectedApartment?.id,
+      "start_date": checkIn?.toIso8601String(),
+      "end_date": checkOut?.toIso8601String(),
       "number_of_persons": guests,
       "notes": notes.isEmpty ? null : notes,
     };
   }
 
-  // دالة لتنظيف البيانات عند إغلاق الشاشة أو نجاح الحجز
   void reset() {
     checkIn = null;
     checkOut = null;

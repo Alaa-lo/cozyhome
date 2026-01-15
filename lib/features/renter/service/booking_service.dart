@@ -7,26 +7,37 @@ import 'package:cozy_home_1/core/models/booking_model.dart';
 class BookingService {
   final ApiClient _apiClient = ApiClient();
 
-  // Create Booking
-  Future<Response> createBooking({
+  // ---------------- CREATE BOOKING ----------------
+  Future<Booking> createBooking({
     required int apartmentId,
     required String startDate,
     required String endDate,
     required int numberOfPersons,
     String? notes,
   }) async {
-    return await _apiClient.post(
-      ApiEndpoints.bookings,
-      data: {
-        "apartment_id": apartmentId,
-        "start_date": startDate,
-        "end_date": endDate,
-        "number_of_persons": numberOfPersons,
-        "notes": notes,
-      },
-    );
+    try {
+      final response = await _apiClient.post(
+        ApiEndpoints.bookings,
+        data: {
+          "apartment_id": apartmentId,
+          "start_date": startDate,
+          "end_date": endDate,
+          "number_of_persons": numberOfPersons,
+          "notes": notes,
+        },
+      );
+
+      // استخراج بيانات الحجز من الريسبونس
+      final bookingJson = response.data["booking"];
+
+      return Booking.fromJson(bookingJson);
+    } on DioException catch (e) {
+      debugPrint("❌ Booking Error: ${e.response?.data}");
+      throw Exception("Failed to create booking");
+    }
   }
 
+  // ---------------- GET MY BOOKINGS ----------------
   Future<List<Booking>> getMyBookings() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.myBookings);
@@ -61,7 +72,7 @@ class BookingService {
     return [];
   }
 
-  // Cancel Booking
+  // ---------------- CANCEL BOOKING ----------------
   Future<bool> cancelBooking(int bookingId) async {
     try {
       final response = await _apiClient.patch(
@@ -73,7 +84,7 @@ class BookingService {
     }
   }
 
-  // Submit Review
+  // ---------------- SUBMIT REVIEW ----------------
   Future<bool> submitReview(
     int bookingId, {
     required int rating,
@@ -87,6 +98,31 @@ class BookingService {
       return response.statusCode == 200;
     } catch (e) {
       return false;
+    }
+  }
+
+  // ---------------- UPDATE BOOKING ----------------
+  Future<Booking> updateBooking({
+    required int bookingId,
+    required String startDate,
+    required String endDate,
+  }) async {
+    try {
+      final response = await _apiClient.put(
+        ApiEndpoints.updateBooking(bookingId),
+        data: {"start_date": startDate, "end_date": endDate},
+      );
+
+      if (response.statusCode == 200 && response.data["booking"] != null) {
+        return Booking.fromJson(response.data["booking"]);
+      } else {
+        throw Exception("Unexpected server response");
+      }
+    } on DioException catch (e) {
+      final serverMessage = e.response?.data?["message"] ?? "Update failed";
+      throw Exception(serverMessage);
+    } catch (e) {
+      throw Exception("Error: $e");
     }
   }
 }

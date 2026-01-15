@@ -23,7 +23,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
     super.initState();
     tabController = TabController(length: 3, vsync: this);
 
-    // ⭐ جلب البيانات عند البداية
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<BookingListController>(
         context,
@@ -125,7 +124,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
     final homeController = Provider.of<RenterHomeController>(
       context,
       listen: false,
-    ); // ⭐ مهم
+    );
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -229,13 +228,20 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                         color: Color(0xFF234E36),
                         size: 26,
                       ),
-                      onPressed: () {
-                        showModalBottomSheet(
+                      onPressed: () async {
+                        final updatedBooking = await showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
                           builder: (_) => EditBookingSheet(booking: booking),
                         );
+
+                        if (updatedBooking != null) {
+                          Provider.of<BookingListController>(
+                            context,
+                            listen: false,
+                          ).fetchBookings();
+                        }
                       },
                     ),
 

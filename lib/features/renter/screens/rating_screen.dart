@@ -73,8 +73,24 @@ class RatingScreen extends StatelessWidget {
                   ),
                 ),
                 onPressed: () async {
-                  await controller.submitRating(booking);
-                  Navigator.pop(context);
+                  final success = await controller.submitRating(booking);
+
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Thank you for your rating!"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Failed to submit rating"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
                 child: Text(
                   "Submit",

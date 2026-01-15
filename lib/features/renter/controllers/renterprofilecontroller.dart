@@ -13,8 +13,6 @@ class ProfileController extends ChangeNotifier {
 
     await Future.delayed(const Duration(seconds: 1));
 
-    // هون بتحطي البيانات الحقيقية من API أو SharedPreferences
-
     isLoading = false;
     notifyListeners();
   }
@@ -28,7 +26,6 @@ class ProfileController extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    // امسحي التوكن أو البيانات
     print("User logged out");
   }
 }

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'package:cozy_home_1/features/renter/controllers/bookinglistcontroller.dart';
 import 'package:cozy_home_1/core/models/booking_model.dart';
+import 'package:cozy_home_1/features/renter/service/booking_service.dart';
 
 class EditBookingSheet extends StatefulWidget {
   final Booking booking;
@@ -101,29 +100,32 @@ class _EditBookingSheetState extends State<EditBookingSheet> {
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            onPressed: () {
-              final bookingController = Provider.of<BookingListController>(
-                context,
-                listen: false,
-              );
+            onPressed: () async {
+              final service = BookingService();
 
-              // نقل القديم إلى previous
-              bookingController.moveToPrevious(widget.booking);
+              try {
+                final updatedBooking = await service.updateBooking(
+                  bookingId: widget.booking.id,
+                  startDate: checkIn.toIso8601String(),
+                  endDate: checkOut.toIso8601String(),
+                );
 
-              // إنشاء نسخة جديدة
-              final updatedBooking = {
-                "id": widget.booking.id,
-                "apartment_id": widget.booking.apartmentId,
-                "checkIn": checkIn,
-                "checkOut": checkOut,
-                "guests": widget.booking.numberOfPersons,
-                "status": "current",
-                "notes": widget.booking.notes,
-              };
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Booking updated successfully!"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
 
-              bookingController.updateBooking(widget.booking, updatedBooking);
-
-              Navigator.pop(context);
+                Navigator.pop(context, updatedBooking);
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(e.toString()),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             child: const Text(
               "Save Changes",

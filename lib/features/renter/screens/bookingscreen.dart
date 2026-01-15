@@ -164,38 +164,24 @@ class BookingScreen extends StatelessWidget {
                             final service = BookingService();
 
                             try {
-                              final response = await service.createBooking(
+                              await service.createBooking(
                                 apartmentId: payload["apartment_id"],
                                 startDate: payload["start_date"],
                                 endDate: payload["end_date"],
                                 numberOfPersons: payload["number_of_persons"],
                                 notes: payload["notes"],
                               );
-                              print(
-                                "APARTMENT ID = ${payload["apartment_id"]}",
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Booking request sent successfully!",
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
                               );
 
-                              if (response.statusCode == 200) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Booking request sent successfully!",
-                                    ),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-
-                                Navigator.pop(context, true);
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Failed to send booking request",
-                                    ),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
+                              Navigator.pop(context, true);
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

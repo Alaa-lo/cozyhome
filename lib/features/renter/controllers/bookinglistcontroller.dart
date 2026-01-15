@@ -37,21 +37,33 @@ class BookingListController extends ChangeNotifier {
     }
   }
 
-  Future<void> addBooking(Map<String, dynamic> data) async {
+  // في BookingListController
+  Future<void> addBooking({
+    required int apartmentId, // مرر الرقم مباشرة
+    required DateTime startDate,
+    required DateTime endDate,
+    required int guests,
+    String? notes,
+  }) async {
     try {
-      final apartment = data['apartment'];
-      final apartmentId = apartment?.id ?? 0;
+      isLoading = true;
+      notifyListeners();
 
       await _bookingService.createBooking(
         apartmentId: apartmentId,
-        startDate: (data['checkIn'] as DateTime).toIso8601String(),
-        endDate: (data['checkOut'] as DateTime).toIso8601String(),
-        numberOfPersons: data['guests'] ?? 1,
-        notes: data['notes'],
+        startDate: startDate.toIso8601String(),
+        endDate: endDate.toIso8601String(),
+        numberOfPersons: guests,
+        notes: notes,
       );
-      await fetchBookings();
+
+      await fetchBookings(); // تحديث القائمة بعد النجاح
     } catch (e) {
-      debugPrint("Error creating booking: $e");
+      debugPrint("❌ Create Booking Error: $e");
+      rethrow; // مهم جداً لكي يشعر الـ UI بالخطأ
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 
