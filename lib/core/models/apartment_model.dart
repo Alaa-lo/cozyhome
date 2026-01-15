@@ -1,3 +1,5 @@
+import '../constants/api_endpoints.dart';
+
 class Apartment {
   final int? id;
   final String title;
@@ -40,6 +42,18 @@ class Apartment {
           return "$baseUrl$img";
         }),
       );
+    } 
+    
+    // Support for 'thumbnail' field from Owner API
+    if (json['thumbnail'] != null) {
+      String thumb = json['thumbnail'].toString();
+      if (!thumb.startsWith("http")) {
+        thumb = "$baseUrl$thumb";
+      }
+      // Add thumbnail if images is empty or just as an extra image
+      if (parsedImages.isEmpty) {
+        parsedImages.add(thumb);
+      }
     }
 
     return Apartment(

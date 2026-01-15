@@ -53,12 +53,43 @@ class ManageApartmentsScreen extends StatelessWidget {
                           topRight: Radius.circular(18),
                         ),
                         child: apt.images.isNotEmpty
-                            ? Image.file(
-                                File(apt.images.first),
-                                height: 180,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              )
+                            ? (apt.images.first.startsWith('http')
+                                ? Image.network(
+                                    apt.images.first,
+                                    height: 180,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        height: 180,
+                                        width: double.infinity,
+                                        color: Colors.grey[300],
+                                        child: const Icon(
+                                          Icons.broken_image,
+                                          size: 50,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Image.file(
+                                    File(apt.images.first),
+                                    height: 180,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                       return Container(
+                                        height: 180,
+                                        width: double.infinity,
+                                        color: Colors.grey[300],
+                                        child: const Icon(
+                                          Icons.broken_image,
+                                          size: 50,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                  ))
                             : Container(
                                 height: 180,
                                 width: double.infinity,
