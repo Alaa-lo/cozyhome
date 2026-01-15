@@ -31,7 +31,7 @@ class ApiEndpoints {
 
   // ---------------- Bookings ----------------
   static const String bookings = "/bookings";
-  static const String myBookings = "/my-bookings"; //
+  static const String myBookings = "/my-bookings";
   static String bookingDetails(int id) => "/bookings/$id"; //
   static String updateBooking(int id) => "/bookings/$id";
   static String cancelBooking(int id) => "/bookings/$id/cancel"; //

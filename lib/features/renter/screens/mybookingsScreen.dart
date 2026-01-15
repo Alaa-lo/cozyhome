@@ -32,45 +32,57 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
   }
 
   @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Consumer<BookingListController>(
-      builder: (context, controller, _) {
-        if (controller.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF234E36)),
+    // تم إضافة Scaffold هنا ليكون المرجع الأساسي للماتيريال
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5), // لون خلفية مناسب
+      body: Consumer<BookingListController>(
+        builder: (context, controller, _) {
+          if (controller.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF234E36)),
+            );
+          }
+
+          return Column(
+            children: [
+              // تغليف الـ TabBar بـ Material لحل مشكلة Exception
+              Material(
+                elevation: 0,
+                color: const Color(0xFF234E36),
+                child: TabBar(
+                  controller: tabController,
+                  indicatorColor: const Color(0xFFEBEADA),
+                  labelColor: const Color(0xFFEBEADA),
+                  unselectedLabelColor: Colors.white70,
+                  tabs: const [
+                    Tab(text: "Current"),
+                    Tab(text: "Previous"),
+                    Tab(text: "Cancelled"),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: TabBarView(
+                  controller: tabController,
+                  children: [
+                    _buildList(controller.currentBookings),
+                    _buildList(controller.previousBookings),
+                    _buildList(controller.cancelledBookings),
+                  ],
+                ),
+              ),
+            ],
           );
-        }
-
-        return Column(
-          children: [
-            Container(
-              color: const Color(0xFF234E36),
-              child: TabBar(
-                controller: tabController,
-                indicatorColor: const Color(0xFFEBEADA),
-                labelColor: const Color(0xFFEBEADA),
-                unselectedLabelColor: Colors.white70,
-                tabs: const [
-                  Tab(text: "Current"),
-                  Tab(text: "Previous"),
-                  Tab(text: "Cancelled"),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: TabBarView(
-                controller: tabController,
-                children: [
-                  _buildList(controller.currentBookings),
-                  _buildList(controller.previousBookings),
-                  _buildList(controller.cancelledBookings),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
+        },
+      ),
     );
   }
 
@@ -157,7 +169,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                   context,
                   listen: false,
                 );
-
                 bookingController.cancelBooking(booking.id);
               },
             ),
@@ -262,6 +273,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
                         );
                       },
                     ),
+
+                    const SizedBox(width: 8),
 
                     if (booking.apartment != null)
                       IconButton(

@@ -38,13 +38,13 @@ class BookingService {
   }
 
   // ---------------- GET MY BOOKINGS ----------------
+  // ---------------- GET MY BOOKINGS (المعدل) ----------------
   Future<List<Booking>> getMyBookings() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.myBookings);
-
+      print("response");
       if (response.statusCode == 200) {
         final data = response.data;
-
         final List<Booking> all = [];
 
         if (data['current'] != null) {
@@ -63,10 +63,15 @@ class BookingService {
           );
         }
 
+        // ملاحظة: إذا كان الباك أند يرسل أيضاً قائمة 'pending' أو 'upcoming' أضفها هنا
+        if (data['pending'] != null) {
+          all.addAll((data['pending'] as List).map((e) => Booking.fromJson(e)));
+        }
+
         return all;
       }
     } catch (e) {
-      debugPrint("Error in getMyBookings: $e");
+      debugPrint("❌ Error in getMyBookings Service: $e");
     }
 
     return [];

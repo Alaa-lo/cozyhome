@@ -9,36 +9,45 @@ class BookingListController extends ChangeNotifier {
   List<Booking> previousBookings = [];
   List<Booking> cancelledBookings = [];
   bool isLoading = false;
-
   Future<void> fetchBookings() async {
     isLoading = true;
     notifyListeners();
 
-    final allBookings = await _bookingService.getMyBookings();
-    final today = DateTime.now();
+    try {
+      final allBookings = await _bookingService.getMyBookings();
 
-    // 🔹 Cancelled
-    cancelledBookings = allBookings
-        .where((b) => b.status == 'cancelled' || b.status == 'rejected')
-        .toList();
+      // توحيد النصوص للمقارنة
+      String getStatus(Booking b) => b.status.toLowerCase();
 
-    // 🔹 Previous (انتهى)
-    previousBookings = allBookings.where((b) {
-      return b.endDate.isBefore(today) &&
-          b.status != 'cancelled' &&
-          b.status != 'rejected';
-    }).toList();
+      // 1. المكنسلة أو المرفوضة
+      cancelledBookings = allBookings
+          .where(
+            (b) => getStatus(b) == 'cancelled' || getStatus(b) == 'rejected',
+          )
+          .toList();
 
-    // 🔹 Current (ضمن المدة)
-    currentBookings = allBookings.where((b) {
-      return b.startDate.isBefore(today) &&
-          b.endDate.isAfter(today) &&
-          b.status != 'cancelled' &&
-          b.status != 'rejected';
-    }).toList();
+      // 2. السابقة (التي انتهت بالفعل - حالتها مكتملة)
+      previousBookings = allBookings
+          .where(
+            (b) => getStatus(b) == 'completed' || getStatus(b) == 'previous',
+          )
+          .toList();
 
-    isLoading = false;
-    notifyListeners();
+      // 3. الحالية (أي حجز حالته مقبول أو حالي أو بانتظار الموافقة ولم يُلغى)
+      currentBookings = allBookings.where((b) {
+        final status = getStatus(b);
+        // نعتبر الحجز حالي إذا كان مقبولاً (approved) أو قيد الانتظار (pending)
+        // أو إذا كان الباك أند وضعه في قائمة current
+        return status == 'approved' ||
+            status == 'pending' ||
+            status == 'current';
+      }).toList();
+    } catch (e) {
+      debugPrint("❌ Filter Error: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> cancelBooking(int bookingId) async {
